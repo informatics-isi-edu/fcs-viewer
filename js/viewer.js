@@ -48,12 +48,31 @@ function getHistogramSetAt(blob, key) {
 }
 
 function getHistogramDefaultLayout(sample,key){
-  var t="Histogram of "+key+ " in "+sample;
+  var t="Histogram of "+key+ " in "+sample +"(log)";
   var p= {
       "title": t,
-      "margin": { "r": 100, "t": 80, "b": 80, "l": 80 },
-      "xaxis": { "title":key, "autorange": true },
-      "yaxis": { "title":"Count","autorange": true }
+      "xaxis": { "title":key+"(log)"},
+      "yaxis": { "title":"Count"}
+      };   
+  return p;
+}
+
+
+function getScatterSetAt(blob, xkey, ykey) {
+  var xs=blob[xkey];
+  var x= Object.keys(xs).map(function(k) { return parseFloat(xs[k]) });
+  var ys=blob[ykey];
+  var y= Object.keys(ys).map(function(k) { return parseFloat(ys[k]) });
+  var data= [ { "x": x, "y": y, "mode":"markers",  "type":"scatter" } ];
+  return data;
+}
+
+function getScatterDefaultLayout(sample,xkey,ykey){
+  var t= xkey+" vs "+ykey+" in "+sample+"(log)";
+  var p= {
+      "title": t,
+      "xaxis": { "title":xkey+"(log)"},
+      "yaxis": { "title":ykey+"(log)"}
       };   
   return p;
 }
@@ -139,6 +158,13 @@ jQuery(document).ready(function() {
 
   var dataKeys=getKeys(blob);
   var cnt=dataKeys.length;
+
+//window.console.log(dataKeys);
+//[ "Forward Scatter (FSC-HLin)", "Side Scatter (SSC-HLin)",
+//  "Green Fluorescence (GRN-HLin)", "Yellow Fluorescence (YLW-HLin)",
+//  "Red Fluorescence (RED-HLin)" ]
+
+// histograms
   for(var i=0; i<cnt; i++) {
      var key=dataKeys[i];
 
@@ -147,6 +173,15 @@ jQuery(document).ready(function() {
      var _layout=getHistogramDefaultLayout(fstub,key);
      addAPlot(_data, _layout);
   }
+
+// scatters
+  var key1=dataKeys[0];
+  var key2=dataKeys[4];
+  var _data=getScatterSetAt(blob, key1, key2);
+  change2Log(_data);
+  var _layout=getScatterDefaultLayout(fstub,key1, key2);
+  addAPlot(_data, _layout);
+
 
   //var p = loadDataFromFile(url);
   //change2Log(p[0]);
