@@ -268,21 +268,23 @@ window.console.log(dataKeys);
 //  var key1=dataKeys[3];
 //  var key2=dataKeys[2];
 
-/****
+  {
   var keyX='Forward Scatter (FSC-HLin)';
   var keyY='Red Fluorescence (RED-HLin)';
   var _data=getScatterSetAt(blob, keyX, keyY);
   change2Log(_data);
   var _layout=getScatterDefaultLayout(fstub,keyX, keyY);
   addAPlot(_data, _layout);
-****/
+  }
 
+  {
   var keyX='Forward Scatter (FSC-HLin)';
   var keyY='Red Fluorescence (RED-HLin)';
   var _data=getMixedSetAt(blob, keyX, keyY);
   change2Log(_data);
   var _layout=getMixedDefaultLayout(fstub,keyX, keyY);
   addAPlot(_data, _layout);
+  }
 
   //var p = loadDataFromFile(url);
   //change2Log(p[0]);
