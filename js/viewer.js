@@ -48,8 +48,10 @@ function getHistogramSetAt(blob, key) {
 }
 
 function getHistogramDefaultLayout(sample,key){
-  var t="Histogram of "+key+ " in "+sample +"(log)";
+  var t="Histogram of "+key+ "<br> in "+sample +"(log)";
   var p= {
+      "width": 450,
+      "height": 400,
       "title": t,
       "xaxis": { "title":key+"(log)"},
       "yaxis": { "title":"Count"}
@@ -63,20 +65,106 @@ function getScatterSetAt(blob, xkey, ykey) {
   var x= Object.keys(xs).map(function(k) { return parseFloat(xs[k]) });
   var ys=blob[ykey];
   var y= Object.keys(ys).map(function(k) { return parseFloat(ys[k]) });
-  var data= [ { "x": x, "y": y, "mode":"markers",  "type":"scatter" } ];
+  var data= [ { "x": x,
+                "y": y, 
+                "mode": "markers",
+                "marker": {
+                    "color": "green",
+                    "size": 10,
+                    "line": {"color": "black", "width": 3},
+                    "opacity": 0.7
+                  },
+                "type":"scatter" } ];
   return data;
 }
 
 function getScatterDefaultLayout(sample,xkey,ykey){
-  var t= xkey+" vs "+ykey+" in "+sample+"(log)";
+  var t= xkey+"<br> vs "+ykey+"<br> in "+sample+"(log)";
   var p= {
+      "width": 550,
+      "height": 500,
       "title": t,
-      "xaxis": { "title":xkey+"(log)"},
-      "yaxis": { "title":ykey+"(log)"}
+      "plot_bgcolor": 'rgb(223, 223, 223)',
+      "xaxis": { "title":xkey+"(log)", "type":"log"},
+      "yaxis": { "title":ykey+"(log)", "type":"log"}
       };   
   return p;
 }
 
+function getMixedSetAt(blob, xkey, ykey) {
+  var xs=blob[xkey];
+  var x= Object.keys(xs).map(function(k) { return parseFloat(xs[k]) });
+  var ys=blob[ykey];
+  var y= Object.keys(ys).map(function(k) { return parseFloat(ys[k]) });
+  var data= [ { "x": x,
+                "y": y, 
+                "name": "points",
+                "mode": "markers",
+                "marker": {
+                    "color": "green",
+                    "size": 5,
+                    "line": {"color": "black", "width": 1},
+                    "opacity": 0.4
+                  },
+                "type":"scatter" },
+              { "x": x,
+                "y": y, 
+                "name": "points",
+                "ncontours": 20,
+                "colorscale": "Hot",
+                "reversescale": true,
+                "showscale": false,
+                "type": "histogram2dcontour" },
+              { "x": x,
+                "name": "x density",
+                 "marker": { "color": "red"},
+                 "yaxis": "y2",
+                 "type": "histogram" },
+              { "y": y,
+                "name": "y density",
+                 "marker": { "color": "blue"},
+                 "xaxis": "x2",
+                 "type": "histogram" }
+          ];
+  return data;
+}
+
+function getMixedDefaultLayout(sample,xkey,ykey){
+  var t= xkey+"<br> vs "+ykey+"<br> in "+sample+"(log)";
+  var p= {
+      "width": 600,
+      "height": 600,
+      "title": t,
+      "plot_bgcolor": 'rgb(223, 223, 223)',
+
+      "showlegend": false,
+      "autosize": false,
+      "margin": {"t": 100},
+      "hovermode": "closest",
+      "bargap": 0,
+      "xaxis": {
+        "domain": [0, 0.85],
+        "showgrid": false,
+        "zeroline": false
+      },
+      "yaxis": {
+        "domain": [0, 0.85],
+        "showgrid": false,
+        "zeroline": false
+      },
+      "xaxis2": {
+        "domain": [0.85, 1],
+        "showgrid": false,
+        "zeroline": false
+      },
+      "yaxis2": {
+        "domain": [0.85, 1],
+        "showgrid": false,
+        "zeroline": false
+      }
+  };   
+  return p;
+}
 
 // fname is plotly.js data json file
 // including 'data' part and 'layout' part
@@ -133,15 +221,15 @@ function getURL(args) {
 
 function addAPlot(data, layout) {
   var d3 = Plotly.d3;
-  var gd3 = d3.select('body')
+  var gd3 = d3.select('plotlyviewer')
     .append('div')
     .style({
-        width: 500,
-        height: 300
+        width: 800,
+        height: 800
     });
 
   var gd = gd3.node();
-  Plotly.plot(gd, data, layout);
+  Plotly.newPlot(gd, data, layout);
 }
 
 jQuery(document).ready(function() {
@@ -159,12 +247,13 @@ jQuery(document).ready(function() {
   var dataKeys=getKeys(blob);
   var cnt=dataKeys.length;
 
-//window.console.log(dataKeys);
+window.console.log(dataKeys);
 //[ "Forward Scatter (FSC-HLin)", "Side Scatter (SSC-HLin)",
 //  "Green Fluorescence (GRN-HLin)", "Yellow Fluorescence (YLW-HLin)",
 //  "Red Fluorescence (RED-HLin)" ]
 
 // histograms
+/*****
   for(var i=0; i<cnt; i++) {
      var key=dataKeys[i];
 
@@ -173,15 +262,27 @@ jQuery(document).ready(function() {
      var _layout=getHistogramDefaultLayout(fstub,key);
      addAPlot(_data, _layout);
   }
+*****/
 
 // scatters
-  var key1=dataKeys[0];
-  var key2=dataKeys[4];
-  var _data=getScatterSetAt(blob, key1, key2);
-  change2Log(_data);
-  var _layout=getScatterDefaultLayout(fstub,key1, key2);
-  addAPlot(_data, _layout);
+//  var key1=dataKeys[3];
+//  var key2=dataKeys[2];
 
+/****
+  var keyX='Forward Scatter (FSC-HLin)';
+  var keyY='Red Fluorescence (RED-HLin)';
+  var _data=getScatterSetAt(blob, keyX, keyY);
+  change2Log(_data);
+  var _layout=getScatterDefaultLayout(fstub,keyX, keyY);
+  addAPlot(_data, _layout);
+****/
+
+  var keyX='Forward Scatter (FSC-HLin)';
+  var keyY='Red Fluorescence (RED-HLin)';
+  var _data=getMixedSetAt(blob, keyX, keyY);
+  change2Log(_data);
+  var _layout=getMixedDefaultLayout(fstub,keyX, keyY);
+  addAPlot(_data, _layout);
 
   //var p = loadDataFromFile(url);
   //change2Log(p[0]);
