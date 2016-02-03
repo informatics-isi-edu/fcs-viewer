@@ -116,13 +116,13 @@ function getMixedSetAt(blob, xkey, ykey) {
                 "showscale": false,
                 "type": "histogram2dcontour" },
               { "x": x,
-                "name": "x density",
-                 "marker": { "color": "red"},
+                "name": "x count",
+                 "marker": { "color": "blue"},
                  "yaxis": "y2",
                  "type": "histogram" },
               { "y": y,
-                "name": "y density",
-                 "marker": { "color": "blue"},
+                "name": "y count",
+                 "marker": { "color": "red"},
                  "xaxis": "x2",
                  "type": "histogram" }
           ];
