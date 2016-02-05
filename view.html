@@ -24,18 +24,25 @@
 <script type='text/javascript' src='js/plotly.min.js'></script>
 </head>
 <body>
-<div id='controlBlock' style='float:right'>
-   <div style='margin-top:10px'>
-     Select dataset...
+<div>
+<div>
+<div id='histograms'></div>
+<div id='twod'></div>
+<div id='mixed'></div>
+</div>
+<div id='controlBlock' style='margin-left:20px;width:100%'>
+   <div style='float:left;margin-left:5px;'>
+     Select dataset..
      <select required id="data-list"></select>
    </div>
-   <div style='margin-top:10px'>
-     Select first channel...
+   <div style='float:left; margin-left:20px;'>
+     <div>
+     Select 1st channel..
      <select required id="x-list"></select>
-   </div>
-   <div style='margin-top:10px'>
-     Select second channel...
+     <br>
+     Select 2nd channel..
      <select required id="y-list"></select>
+     </div>
    </div>
 <!--
    <div style='margin-top:10px;'>
@@ -44,10 +51,7 @@
    </div>
 -->
 </div>
-<div>
-<div id='histograms'></div>
-<div id='twod'></div>
-<div id='mixed'></div>
 </div>
+<div>
 </body>
 </html>
