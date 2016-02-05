@@ -19,10 +19,35 @@
 <link href="css/bootstrap-theme.min.css" rel="stylesheet">
 <script type='text/javascript' src='js/bootstrap.min.js'></script>
 
+<script type='text/javascript' src='js/viewer-data.js'></script>
 <script type='text/javascript' src='js/viewer.js'></script>
-<script type='text/javascript' src='js/plotly.min.js'></script>
+<script type='text/javascript' src='js/plotly.js'></script>
 </head>
 <body>
-<plotlyviewer/>
+<div id='controlBlock' style='float:right'>
+   <div style='margin-top:10px'>
+     Select dataset...
+     <select required id="data-list"></select>
+   </div>
+   <div style='margin-top:10px'>
+     Select first channel...
+     <select required id="x-list"></select>
+   </div>
+   <div style='margin-top:10px'>
+     Select second channel...
+     <select required id="y-list"></select>
+   </div>
+<!--
+   <div style='margin-top:10px;'>
+     Select plot style...
+     <select required id="plot-list"></select>
+   </div>
+-->
+</div>
+<div>
+<div id='histograms'></div>
+<div id='twod'></div>
+<div id='mixed'></div>
+</div>
 </body>
 </html>
