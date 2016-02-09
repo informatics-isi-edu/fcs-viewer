@@ -44,13 +44,15 @@ function getHistogramAt(blob, key) {
   return data;
 }
 
-function getHistogramDefaultLayout(sample,key){
+// readup on : http://stackoverflow.com/questions/27334585/in-plotly-how-do-i-create-a-linked-x-axis
+
+function getHistogramDefaultLayout(sample,key,min,max){
   var t="Histogram of "+key+ "<br> in "+sample;
   var p= {
       "width": 600,
       "height": 300,
 //     "title": t,
-      "xaxis": { "title":key+"(log)"},
+      "xaxis": { "title":key+"(log)", "range": [min, max], },
       "yaxis": { "title":"Count"}
       };   
   return p;
@@ -199,6 +201,45 @@ function change2Log(datablob) {
   }
 }
 
+function maxOnDataBlob(datablob) {
+  var cnt=datablob.length;
+  var maxX=0;
+  var maxY=0;
+  for(i=0; i<cnt; i++) {
+     var b=datablob[i];
+     if(b['x']) {
+        var _maxX=Math.max.apply(Math,b['x']);
+        if(_maxX > maxX) 
+          maxX=_maxX;
+     }
+     if(b['y']) {
+        var _maxY=Math.max.apply(Math,b['y']);
+        if(_maxY > maxY)
+          maxY=_maxY;
+     }
+  }
+  return [maxX, maxY];
+}
+
+function minOnDataBlob(datablob) {
+  var cnt=datablob.length;
+  var minX=0;
+  var minY=0;
+  for(i=0; i<cnt; i++) {
+     var b=datablob[i];
+     if(b['x']) {
+        var _minX=Math.min.apply(Math,b['x']);
+        if(_minX < minX) 
+          minX=_minX;
+     }
+     if(b['y']) {
+        var _minY=Math.min.apply(Math,b['y']);
+        if(_minY > minY)
+          minY=_minY;
+     }
+  }
+  return [minX, minY];
+}
 function getURL(args) {
   var params = args[1].split('&');
   for (var i=0; i < params.length; i++) {
@@ -304,12 +345,24 @@ function allHistograms(fstub, blob, keys) {
 function addHistograms(fstub, blob, keyX, keyY) {
   var _data=getHistogramAt(blob, keyX);
   change2Log(_data);
-  var _layout=getHistogramDefaultLayout(fstub,trimKey(keyX));
+  var _t=maxOnDataBlob(_data);
+  var _s=minOnDataBlob(_data);
+  var _max=_t[0];
+  var _min=_s[0]
+  var _data2=getHistogramAt(blob, keyY);
+  change2Log(_data2);
+  _t=maxOnDataBlob(_data2);
+  _s=minOnDataBlob(_data2);
+  if(_t[0]>_max)
+     _max=_t[0];
+  if(_s[0]<_min)
+     _min=_s[0];
+
+  var _layout=getHistogramDefaultLayout(fstub,trimKey(keyX),_min,_max);
+  var _layout2=getHistogramDefaultLayout(fstub,trimKey(keyY),_min,_max);
+
   addAPlot('#myViewer',_data, _layout,450,300);
-  var _data=getHistogramAt(blob, keyY);
-  change2Log(_data);
-  var _layout=getHistogramDefaultLayout(fstub,trimKey(keyY));
-  addAPlot('#myViewer',_data, _layout,450,300);
+  addAPlot('#myViewer',_data2, _layout2,450,300);
 }
 
 // scatter
@@ -395,7 +448,7 @@ jQuery(document).ready(function() {
       // no change
       } else {
       keyX=xkey;
-      updateMixed(fstub, blob,keyX,keyY);
+      updatePlot(fstub, blob,keyX,keyY,plotP);
     }
   });
   $('#y-list').change(function() {
@@ -404,7 +457,7 @@ jQuery(document).ready(function() {
       // no change
       } else {
       keyY=ykey;
-      updateMixed(fstub, blob,keyX,keyY);
+      updatePlot(fstub, blob,keyX,keyY,plotP);
     }
   });
   $('#data-list').change(function() {
@@ -414,7 +467,7 @@ jQuery(document).ready(function() {
       } else {
         fstub=ddata;
         blob=loadBlobFromInner(fstub);
-        updateMixed(fstub,blob,keyX,keyY);
+        updatePlot(fstub,blob,keyX,keyY,plotP);
     }
   });
   $('#plot-list').change(function() {
