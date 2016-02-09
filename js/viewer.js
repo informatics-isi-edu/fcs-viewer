@@ -1,6 +1,6 @@
 // http://localhost/plotly/view.html?http://localhost/data/plotly/YLW-HLin.json
 
-var saveMixed;
+var savePlot=null;
 
 // should be a very small file and used for testing and so can ignore
 // >>Synchronous XMLHttpRequest on the main thread is deprecated 
@@ -37,11 +37,6 @@ function loadBlobFromJsonFile(fname) {
   return blob;
 }
 
-function getKeys(blob) {
-  var keys = Object.keys(blob); 
-  return keys;
-}
-
 function getHistogramAt(blob, key) {
   var s=blob[key];
   var x= Object.keys(s).map(function(k) { return parseFloat(s[k]) });
@@ -52,7 +47,7 @@ function getHistogramAt(blob, key) {
 function getHistogramDefaultLayout(sample,key){
   var t="Histogram of "+key+ "<br> in "+sample;
   var p= {
-      "width": 450,
+      "width": 600,
       "height": 300,
 //     "title": t,
       "xaxis": { "title":key+"(log)"},
@@ -82,8 +77,8 @@ function getScatterSetAt(blob, xkey, ykey) {
 function getScatterSetDefaultLayout(sample,xkey,ykey){
   var t= xkey+" vs "+ykey+"<br> in "+sample;
   var p= {
-      "width": 500,
-      "height": 500,
+      "width": 600,
+      "height": 600,
       "title": t,
       "plot_bgcolor": 'rgb(223, 223, 223)',
       "xaxis": { "title":xkey+"(log)", "type":"log"},
@@ -233,7 +228,7 @@ function addAPlot(divname, data, layout, w, h) {
     });
 
   var gd = gd3.node();
-  saveMixed=gd;
+  savePlot=gd;
   Plotly.newPlot(gd, data, layout);
 }
 
@@ -283,106 +278,116 @@ function setupDropDowns(keys) {
   xlist.innerHTML = _xlist;
   ylist.innerHTML = _ylist;
 
-/*****
   var plist = document.getElementById('plot-list');
-  var _plist = '<option selected="selected" value="' + 'mixed' + '">' + 'mixed' + '</option>';
-      _plist += '<option value="' + 'twod' + '">' + 'twod' + '</option>';
+  var _plist = '<option selected="selected" value="' + 'mixed' + '">' + 'mixed plots' + '</option>';
+      _plist += '<option value="' + 'twod' + '">' + '2d scatter' + '</option>';
       _plist += '<option value="' + 'histograms' + '">' + 'histograms' + '</option>';
   plist.innerHTML = _plist;
-*****/
 
   var dlist = document.getElementById('data-list');
   var _dlist = '<option selected="selected" value="' + 'inf_072514.EP5' + '">' + 'inf_072514.EP5.FCS' + '</option>';
       _dlist += '<option value="' + 'exp_012116kv.EP5' + '">' + 'exp_012116kv.EP5.FCS' + '</option>';
   dlist.innerHTML = _dlist;
+} 
+
+function allHistograms(fstub, blob, keys) {
+  for(var i=0; i<cnt; i++) {
+     var key=keys[i];
+     var _data=getHistogramAt(blob, key);
+     change2Log(_data);
+     var _layout=getHistogramDefaultLayout(fstub,key);
+     addAPlot('#myViewer',_data, _layout, 450, 300);
+  }
+}
+
+// histograms
+function addHistograms(fstub, blob, keyX, keyY) {
+  var _data=getHistogramAt(blob, keyX);
+  change2Log(_data);
+  var _layout=getHistogramDefaultLayout(fstub,trimKey(keyX));
+  addAPlot('#myViewer',_data, _layout,450,300);
+  var _data=getHistogramAt(blob, keyY);
+  change2Log(_data);
+  var _layout=getHistogramDefaultLayout(fstub,trimKey(keyY));
+  addAPlot('#myViewer',_data, _layout,450,300);
+}
+
+// scatter
+function addTwoD(fstub,blob,keyX,keyY) {
+  var _data=getScatterSetAt(blob, keyX, keyY);
+  change2Log(_data);
+  var _layout=getScatterSetDefaultLayout(fstub,trimKey(keyX), trimKey(keyY));
+  addAPlot('#myViewer',_data, _layout, 600,600);
+}
+
+// scatter with histogram subplots
+function addMixed(fstub, blob, keyX, keyY) {
+  var _data=getMixedSetAt(blob, keyX, keyY);
+  change2Log(_data);
+  var _layout=getMixedSetDefaultLayout(fstub,trimKey(keyX), trimKey(keyY));
+  addAPlot('#myViewer',_data, _layout, 600, 600);
+}
+
+function updateMixed(fstub, blob, keyX, keyY) {
+    var mixDiv=savePlot;
+    var _data=getMixedSetAt(blob, keyX, keyY);
+    change2Log(_data);
+    var _layout=getMixedSetDefaultLayout(fstub,trimKey(keyX), trimKey(keyY));
+    var _p=mixDiv.data;
+    mixDiv.data=_data;
+    var _t=_layout['title']; 
+    mixDiv.layout.title=_t;
+    mixDiv.layout.xaxis.title=trimKey(keyX);
+    mixDiv.layout.yaxis.title=trimKey(keyY);
+    Plotly.redraw(mixDiv);
+}
+
+function updatePlot(fstub,blob,keyX,keyY,plotP) {
+  $('#myViewer').empty();
+  savePlot=null;
+  switch (plotP) {
+    case 'mixed' :
+      addMixed(fstub, blob, keyX, keyY);
+      break;
+    case 'twod' :
+      addTwoD(fstub, blob, keyX, keyY);
+      break;
+    case 'histograms':
+      addHistograms(fstub, blob, keyX, keyY);
+      break;
+  }
 }
 
 jQuery(document).ready(function() {
 
-  var blob;
-  var fstub;
+  var blob=null;
+  var dataKeys=null;
+  var fstub="inf_072514.EP5";
+
+  // defaults
   var keyX='Forward Scatter (FSC-HLin)';
-  var shortkeyX=trimKey(keyX);
   var keyY='Red Fluorescence (RED-HLin)';
-  var shortkeyY=trimKey(keyY);
   var plotP='mixed';
 
   var args=document.location.href.split('?');
 //http://localhost/plotly/view.html?http://localhost/data/plotly/inf_072514.EP5.json
   if (args.length === 2) {
      var url=getURL(args);
-     blob=loadBlobFromJsonFile(url);
      fstub=chopForStub(url);
+     blob=loadBlobFromJsonFile(url);
+     dataKeys=setupUI(blob);
      } else {
-        fstub="inf_072514.EP5";
-        blob=loadBlobFromInner(fstub);
+        if(enableEmbedded) {
+          // do nothing
+          } else {
+            blob=loadBlobFromInner(fstub);
+            dataKeys=setupUI(blob);
+        }
   }
 
-
-  var dataKeys=getKeys(blob);
-  setupDropDowns(dataKeys);
-  var cnt=dataKeys.length;
-
-window.console.log(dataKeys);
 //[ "Forward Scatter (FSC-HLin)", "Side Scatter (SSC-HLin)",
 //  "Green Fluorescence (GRN-HLin)", "Yellow Fluorescence (YLW-HLin)",
 //  "Red Fluorescence (RED-HLin)" ]
-
-// all histogram
-/*****
-  for(var i=0; i<cnt; i++) {
-     var key=dataKeys[i];
-     var _data=getHistogramAt(blob, key);
-     change2Log(_data);
-     var _layout=getHistogramDefaultLayout(fstub,key);
-     addAPlot('#histograms',_data, _layout, 450, 300);
-  }
-*****/
-// histograms
-  function addHistograms()
-  {
-  var _data=getHistogramAt(blob, keyX);
-  change2Log(_data);
-  var _layout=getHistogramDefaultLayout(fstub,shortkeyX);
-  addAPlot('#histograms',_data, _layout,450,300);
-  var _data=getHistogramAt(blob, keyY);
-  change2Log(_data);
-  var _layout=getHistogramDefaultLayout(fstub,shortkeyY);
-  addAPlot('#histograms',_data, _layout,450,300);
-  }
-
-// scatters
-  function addTwoD()
-  {
-  var _data=getScatterSetAt(blob, keyX, keyY);
-  change2Log(_data);
-  var _layout=getScatterSetDefaultLayout(fstub,shortkeyX, shortkeyY);
-  addAPlot('#twod',_data, _layout, 500,500);
-  }
-
-// scatter with histogram subplots
-  function addMixed()
-  {
-  var _data=getMixedSetAt(blob, keyX, keyY);
-  change2Log(_data);
-  var _layout=getMixedSetDefaultLayout(fstub,shortkeyX, shortkeyY);
-  addAPlot('#mixed',_data, _layout, 600, 600);
-  }
-
-  function updateMixed()
-  {
-    var mixDiv=saveMixed;
-    var _data=getMixedSetAt(blob, keyX, keyY);
-    change2Log(_data);
-    var _layout=getMixedSetDefaultLayout(fstub,shortkeyX, shortkeyY);
-    var _p=mixDiv.data;
-    mixDiv.data=_data;
-    var _t=_layout['title']; 
-    mixDiv.layout.title=_t;
-    mixDiv.layout.xaxis.title=shortkeyX;
-    mixDiv.layout.yaxis.title=shortkeyY;
-    Plotly.redraw(mixDiv);
-  }
 
   $('#x-list').change(function() {
     var xkey = document.getElementById("x-list").value;
@@ -390,8 +395,7 @@ window.console.log(dataKeys);
       // no change
       } else {
       keyX=xkey;
-      shortkeyX=trimKey(keyX);
-      updateMixed();
+      updateMixed(fstub, blob,keyX,keyY);
     }
   });
   $('#y-list').change(function() {
@@ -400,8 +404,7 @@ window.console.log(dataKeys);
       // no change
       } else {
       keyY=ykey;
-      shortkeyY=trimKey(keyY);
-      updateMixed();
+      updateMixed(fstub, blob,keyX,keyY);
     }
   });
   $('#data-list').change(function() {
@@ -411,30 +414,23 @@ window.console.log(dataKeys);
       } else {
         fstub=ddata;
         blob=loadBlobFromInner(fstub);
-        updateMixed();
+        updateMixed(fstub,blob,keyX,keyY);
     }
   });
-/*****
   $('#plot-list').change(function() {
     var ptype = document.getElementById("plot-list").value;
     if(ptype === plotP) {
       // no need to do anything
       } else {
         plotP=ptype;
-        updatePlot();
+        updatePlot(fstub,blob,keyX,keyY,plotP);
     }
   });
-function updatePlot() {}
-******/
 
-  function updateAll() {
-  
+// initial plot
+  if(!enableEmbedded) {
+    addMixed(fstub,blob,keyX,keyY);
   }
-  function updateChannels() {
-    
-  }
-
-  addMixed();
 })
 
 
