@@ -37,10 +37,12 @@ function loadBlobFromJsonFile(fname) {
   return blob;
 }
 
-function getHistogramAt(blob, key) {
+function getHistogramAt(blob, key, color) {
   var s=blob[key];
   var x= Object.keys(s).map(function(k) { return parseFloat(s[k]) });
-  var data= [ { "x": x, "type" :"histogram" } ];
+  var data= [ { "x": x, 
+                "marker": { "color":color },
+                "type" :"histogram" } ];
   return data;
 }
 
@@ -89,6 +91,7 @@ function getScatterSetDefaultLayout(sample,xkey,ykey){
   return p;
 }
 
+//https://plot.ly/javascript/2d-density-plots/
 function getMixedSetAt(blob, xkey, ykey) {
   var xs=blob[xkey];
   var x= Object.keys(xs).map(function(k) { return parseFloat(xs[k]) });
@@ -273,27 +276,64 @@ function addAPlot(divname, data, layout, w, h) {
   Plotly.newPlot(gd, data, layout);
 }
 
-//[ "Forward Scatter (FSC-HLin)", "Side Scatter (SSC-HLin)",
-//  "Green Fluorescence (GRN-HLin)", "Yellow Fluorescence (YLW-HLin)",
-//  "Red Fluorescence (RED-HLin)" ]
 function trimKey(key) {
-  if(key == 'Time') // skip this in dropdown
+  if(Object.keys(SKIPKEYS).indexOf(key)!= -1) // skip this in dropdown
     return null;
-  switch (key) { 
-   case "Forward Scatter (FSC-HLin)":
-     return "Forward Scatter";
-   case "Side Scatter (SSC-HLin)":
-     return "Side Scatter";
-   case "Green Fluorescence (GRN-HLin)":
-     return "Green Fluorenscene";
-   case "Yellow Fluorescence (YLW-HLin)":
-     return "Yellow Fluorescence";
-   case "Red Fluorescence (RED-HLin)":
-     return "Red Fluorescence";
-   default:
-      return null;
+  if(Object.keys(KEYLIST).indexOf(key) != -1) {
+     var s=KEYLIST[key];
+     return s;
   }
+  return null;
 }
+
+/***
+XXXX
+   console.log(new_x, new_y, new_z);
+
+    plot.postMessage({
+        task: 'restyle',
+        update: {
+            x: [new_x, new_x, new_x, NaN],
+            y: [new_y, new_y, NaN, new_y],
+            text: [new_z, [],
+                [],
+                []
+            ]
+        }
+    }, 'https://plot.ly');
+XXXX
+***/
+
+function setupSliders() {
+  var Rmax1=1;
+  var Rmax2=1;
+  jQuery("#channel1_slider").slider({
+    range: true,
+    min: 0,
+    step: 0.001,
+    max: 1,
+    values: [0, 1],
+    slide: channel1Slide
+  });
+
+  jQuery("#channel2_slider").slider({
+    range: true,
+    min: 0,
+    step: 0.001,
+    max: 1,
+    values: [0, 1],
+    slide: channel2Slide
+  });
+}
+
+function channel1Slide(event,ui) {
+window.console.log("in channel1slide.."+ui.values[0]+" "+ui.values[1]);
+}
+
+function channel2Slide(event,ui) {
+window.console.log("in channel2slide.."+ui.values[0]+" "+ui.values[1]);
+}
+
 
 // particular to our dataset..
 function setupDropDowns(keys) {
@@ -304,12 +344,12 @@ function setupDropDowns(keys) {
   for (var i = 0; i < keys.length; i++) {
     var _k=trimKey(keys[i]);
     if(_k) {
-      if(_k=='Red Fluorescence') {
+      if(keys[i]==DEFAULTCHANNEL2) {
         _ylist += '<option selected="selected" value="' + keys[i] + '">' + _k + '</option>';
         } else {
         _ylist += '<option value="' + keys[i] + '">' + _k + '</option>';
       }
-      if(_k=='Forward Scatter') {
+      if(keys[i]==DEFAULTCHANNEL1) {
         _xlist += '<option selected="selected" value="' + keys[i] + '">' + _k + '</option>';
         } else {
         _xlist += '<option value="' + keys[i] + '">' + _k + '</option>';
@@ -343,13 +383,13 @@ function allHistograms(fstub, blob, keys) {
 
 // histograms
 function addHistograms(fstub, blob, keyX, keyY) {
-  var _data=getHistogramAt(blob, keyX);
+  var _data=getHistogramAt(blob, keyX,'blue');
   change2Log(_data);
   var _t=maxOnDataBlob(_data);
   var _s=minOnDataBlob(_data);
   var _max=_t[0];
   var _min=_s[0]
-  var _data2=getHistogramAt(blob, keyY);
+  var _data2=getHistogramAt(blob, keyY,'red');
   change2Log(_data2);
   _t=maxOnDataBlob(_data2);
   _s=minOnDataBlob(_data2);
@@ -358,8 +398,8 @@ function addHistograms(fstub, blob, keyX, keyY) {
   if(_s[0]<_min)
      _min=_s[0];
 
-  var _layout=getHistogramDefaultLayout(fstub,trimKey(keyX),_min,_max);
-  var _layout2=getHistogramDefaultLayout(fstub,trimKey(keyY),_min,_max);
+  var _layout=getHistogramDefaultLayout(fstub,trimKey(keyX),_min,_max,'red');
+  var _layout2=getHistogramDefaultLayout(fstub,trimKey(keyY),_min,_max,'blue');
 
   addAPlot('#myViewer',_data, _layout,450,300);
   addAPlot('#myViewer',_data2, _layout2,450,300);
@@ -415,11 +455,11 @@ jQuery(document).ready(function() {
 
   var blob=null;
   var dataKeys=null;
-  var fstub="inf_072514.EP5";
+  var fstub=DEFAULTFCS;
 
   // defaults
-  var keyX='Forward Scatter (FSC-HLin)';
-  var keyY='Red Fluorescence (RED-HLin)';
+  var keyX=DEFAULTCHANNEL1;
+  var keyY=DEFAULTCHANNEL2;
   var plotP='mixed';
 
   var args=document.location.href.split('?');
@@ -437,10 +477,6 @@ jQuery(document).ready(function() {
             dataKeys=setupUI(blob);
         }
   }
-
-//[ "Forward Scatter (FSC-HLin)", "Side Scatter (SSC-HLin)",
-//  "Green Fluorescence (GRN-HLin)", "Yellow Fluorescence (YLW-HLin)",
-//  "Red Fluorescence (RED-HLin)" ]
 
   $('#x-list').change(function() {
     var xkey = document.getElementById("x-list").value;

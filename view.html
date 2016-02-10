@@ -20,30 +20,41 @@
 <script type='text/javascript' src='js/bootstrap.min.js'></script>
 
 <script type='text/javascript' src='js/viewer-data.js'></script>
-<script type='text/javascript' src='js/viewer_ui.js'></script>
+<script type='text/javascript' src='js/viewer-user.js'></script>
+<script type='text/javascript' src='js/viewer-ui.js'></script>
 <script type='text/javascript' src='js/viewer.js'></script>
 <script type='text/javascript' src='js/plotly.min.js'></script>
+<style>
+#channel1_slider .ui-slider-range {
+ background: blue;
+}
+#channel2_slider .ui-slider-range {
+ background: red;
+}
+</style>
 </head>
 <body>
 <div id='viewerBlock'>
 <div id='myViewer'></div>
 </div>
-<div id='controlBlock' style='margin-left:20px;width:100%;display:none'>
-   <div style='float:left;margin-left:5px;'>
+<div id='controlBlock' style='margin-left:20px;width:600px;display:none; height:100px;'>
+   <div style='float:left;margin:5px; width:80%;'>
      Select dataset..
      <select required id="data-list"></select>
-     <br>
      Select plot..
-     <select required id="plot-list"></select>
-   </div>
-   <div style='float:left; margin-left:20px;'>
-     <div>
+     <select required id="plot-list" style='float:right'></select>
+     </div>
+   <br>
+   <div style='float:left;margin:5px; width:80%;'>
      Select 1st channel..
      <select required id="x-list"></select>
-     <br>
+     <div id='channel1_slider' style='border:solid 2px grey; float:right;width:140px'> </div>
+   </div>
+   <br>
+   <div style='float:left;margin:5px; width:80%;'>
      Select 2nd channel..
      <select required id="y-list"></select>
-     </div>
+     <div id='channel2_slider' style='border:solid 2px grey;float:right;width:140px;'> </div>
    </div>
 </div>
 </body>
