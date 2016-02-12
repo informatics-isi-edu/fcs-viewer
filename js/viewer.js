@@ -1,6 +1,18 @@
 // http://localhost/plotly/view.html?http://localhost/data/plotly/YLW-HLin.json
 
-var savePlot=null;
+var saveMixPlot=null;
+var saveXPlot=null;
+var saveYPlot=null;
+var saveScatterPlot=null;
+var saveBlob=null;
+
+var slider_X_dirty=false;
+var slider_Y_dirty=false;
+var saveKeyX=null;
+var saveKeyY=null;
+var savePlotP=null;
+
+var saveSliders=[];
 
 // should be a very small file and used for testing and so can ignore
 // >>Synchronous XMLHttpRequest on the main thread is deprecated 
@@ -48,15 +60,20 @@ function getHistogramAt(blob, key, color) {
 
 // readup on : http://stackoverflow.com/questions/27334585/in-plotly-how-do-i-create-a-linked-x-axis
 
-function getHistogramDefaultLayout(sample,key,min,max){
+function getHistogramDefaultLayout(sample,key,range){
   var t="Histogram of "+key+ "<br> in "+sample;
+  var tmp;
+  if(range) {
+    tmp= { "title":key+"(log)", "range": range };
+    } else {
+      tmp= { "title":key+"(log)" };
+  }
   var p= {
-      "width": 600,
-      "height": 300,
-//     "title": t,
-      "xaxis": { "title":key+"(log)", "range": [min, max], },
-      "yaxis": { "title":"Count"}
-      };   
+        "width": 600,
+        "height": 300,
+        "xaxis": tmp,
+        "yaxis": { "title":"Count"}
+        };   
   return p;
 }
 
@@ -78,15 +95,29 @@ function getScatterSetAt(blob, xkey, ykey) {
   return data;
 }
 
-function getScatterSetDefaultLayout(sample,xkey,ykey){
+function getScatterSetDefaultLayout(sample,xkey,ykey,xrange,yrange){
   var t= xkey+" vs "+ykey+"<br> in "+sample;
+/*
+ var xrange=[ 0.654, 0.889 ];
+ var yrange=[ -1.349, 0.769 ];
+ var xxrange=[ mm1[0], mm1[1] ]; // 4.668, 7.48
+ var yyrange=[ mm2[0], mm2[1] ]; // 0, 4.28
+*/
+  var tmpx, tmpy;
+  if(xrange && yrange) {
+    tmpx= { "title":xkey+"(log)", "type":"log", "range": xrange };
+    tmpy= { "title":ykey+"(log)", "type":"log", "range": yrange };
+    } else {
+      tmpx= { "title":xkey+"(log)", "type":"log" };
+      tmpy= { "title":ykey+"(log)", "type":"log" };
+  }
   var p= {
       "width": 600,
       "height": 600,
       "title": t,
       "plot_bgcolor": 'rgb(223, 223, 223)',
-      "xaxis": { "title":xkey+"(log)", "type":"log"},
-      "yaxis": { "title":ykey+"(log)", "type":"log"}
+      "xaxis": tmpx,
+      "yaxis": tmpy
       };   
   return p;
 }
@@ -97,6 +128,12 @@ function getMixedSetAt(blob, xkey, ykey) {
   var x= Object.keys(xs).map(function(k) { return parseFloat(xs[k]) });
   var ys=blob[ykey];
   var y= Object.keys(ys).map(function(k) { return parseFloat(ys[k]) });
+/*
+  var xrange=[ 0.654, 0.889 ];
+  var yrange=[ -1.349, 0.769 ];
+  var xxrange=[ 4.668, 7.48 ];
+  var yyrange=[ 0, 4.28 ];
+*/
   var data= [ { "x": x,
                 "y": y, 
                 "name": "points",
@@ -106,7 +143,7 @@ function getMixedSetAt(blob, xkey, ykey) {
                     "size": 5,
                     "line": {"color": "black", "width": 1},
                     "opacity": 0.4
-                  },
+                },
                 "type":"scatter" },
               { "x": x,
                 "y": y, 
@@ -130,8 +167,35 @@ function getMixedSetAt(blob, xkey, ykey) {
   return data;
 }
 
-function getMixedSetDefaultLayout(sample,xkey,ykey){
+function getMixedSetDefaultLayout(sample,xkey,ykey,xrange,yrange,xrange2,yrange2){
   var t= xkey+" vs "+ykey+"<br> in "+sample;
+  var tmpx, tmpy, tmpx2, tmpy2;
+  if(xrange) {
+    tmpx= { "domain": [0, 0.85], "showgrid": true, "title": xkey,
+              "range": xrange, "autorange":false, "zeroline": false };
+    } else { 
+      tmpx= { "domain": [0, 0.85], "showgrid": true, "title": xkey, 
+              "zeroline": false };
+  }
+  if(yrange) {
+    tmpy= { "domain": [0, 0.85], "showgrid": true, "title": ykey,
+              "range": yrange,"autorange":false, "zeroline": false };
+    } else {
+      tmpy= { "domain": [0, 0.85], "showgrid": true, "title": ykey, "zeroline": false };
+  }
+  if(xrange2) {
+    tmpx2 = { "domain": [0.85, 1], "showgrid": false,
+              "range": xrange2, "autorange":false, "zeroline": false };
+    } else {
+      tmpx2 = { "domain": [0.85, 1], "showgrid": false, "zeroline": false };
+  }
+
+  if(yrange2) {
+    tmpy2= { "domain": [0.85, 1], "showgrid": false,
+              "range": yrange2, "autorange":false, "zeroline": false };
+    } else {
+      tmpy2= { "domain": [0.85, 1], "showgrid": false, "zeroline": false };
+  }
   var p= {
       "width": 600,
       "height": 600,
@@ -143,28 +207,10 @@ function getMixedSetDefaultLayout(sample,xkey,ykey){
       "margin": {"t": 100},
       "hovermode": "closest",
       "bargap": 0,
-      "xaxis": {
-        "domain": [0, 0.85],
-        "showgrid": true,
-        "title": xkey,
-        "zeroline": false
-      },
-      "yaxis": {
-        "domain": [0, 0.85],
-        "showgrid": true,
-        "title": ykey,
-        "zeroline": false
-      },
-      "xaxis2": {
-        "domain": [0.85, 1],
-        "showgrid": false,
-        "zeroline": false
-      },
-      "yaxis2": {
-        "domain": [0.85, 1],
-        "showgrid": false,
-        "zeroline": false
-      }
+      "xaxis": tmpx,
+      "yaxis": tmpy,
+      "xaxis2": tmpx2,
+      "yaxis2": tmpy2
   };   
   return p;
 }
@@ -203,46 +249,17 @@ function change2Log(datablob) {
      }
   }
 }
-
-function maxOnDataBlob(datablob) {
-  var cnt=datablob.length;
-  var maxX=0;
-  var maxY=0;
-  for(i=0; i<cnt; i++) {
-     var b=datablob[i];
-     if(b['x']) {
-        var _maxX=Math.max.apply(Math,b['x']);
-        if(_maxX > maxX) 
-          maxX=_maxX;
-     }
-     if(b['y']) {
-        var _maxY=Math.max.apply(Math,b['y']);
-        if(_maxY > maxY)
-          maxY=_maxY;
-     }
-  }
-  return [maxX, maxY];
+function minmaxOnChannel(blob, key) {
+  var s=blob[key];
+  var ss= Object.keys(s).map(function(k) { return parseFloat(s[k]) });
+  var _max=Math.max.apply(Math,ss);
+  var _min=Math.min.apply(Math,ss);
+  _max=Math.log(_max);
+  _min=Math.log(_min);
+  window.console.log("getting minmax on "+key+" "+_min+" "+_max);
+  return [_min, _max];
 }
 
-function minOnDataBlob(datablob) {
-  var cnt=datablob.length;
-  var minX=0;
-  var minY=0;
-  for(i=0; i<cnt; i++) {
-     var b=datablob[i];
-     if(b['x']) {
-        var _minX=Math.min.apply(Math,b['x']);
-        if(_minX < minX) 
-          minX=_minX;
-     }
-     if(b['y']) {
-        var _minY=Math.min.apply(Math,b['y']);
-        if(_minY > minY)
-          minY=_minY;
-     }
-  }
-  return [minX, minY];
-}
 function getURL(args) {
   var params = args[1].split('&');
   for (var i=0; i < params.length; i++) {
@@ -272,8 +289,8 @@ function addAPlot(divname, data, layout, w, h) {
     });
 
   var gd = gd3.node();
-  savePlot=gd;
   Plotly.newPlot(gd, data, layout);
+  return gd;
 }
 
 function trimKey(key) {
@@ -305,15 +322,12 @@ XXXX
 ***/
 
 function setupSliders() {
-  var Rmax1=1;
-  var Rmax2=1;
   jQuery("#channel1_slider").slider({
     range: true,
     min: 0,
     step: 0.001,
     max: 1,
-    values: [0, 1],
-    slide: channel1Slide
+    values: [0, 1]
   });
 
   jQuery("#channel2_slider").slider({
@@ -321,21 +335,73 @@ function setupSliders() {
     min: 0,
     step: 0.001,
     max: 1,
-    values: [0, 1],
-    slide: channel2Slide
+    values: [0, 1]
   });
 }
 
-function channel1Slide(event,ui) {
-window.console.log("in channel1slide.."+ui.values[0]+" "+ui.values[1]);
+function setSliderRange(id,min,max) {
+  jQuery(id).slider("option", "max", max);
+  jQuery(id).slider("option", "min", min);
+  jQuery(id).slider("option", "values", [min,max]);
+}
+ 
+function isEmpty(obj) {
+  for (var x in obj) {
+    if (obj.hasOwnProperty(x))  
+      return false;
+  }
+  return true;
 }
 
-function channel2Slide(event,ui) {
-window.console.log("in channel2slide.."+ui.values[0]+" "+ui.values[1]);
+function resetSliderRange(id) {
+  if(isEmpty(saveSliders)) {
+    var min=jQuery(id).slider("option", "min");
+    var max=jQuery(id).slider("option", "max");
+    jQuery(id).slider("option", "values", [min,max]);
+  }
+  for (var i=0; i< saveSliders.length; i++) {
+    var p=saveSliders[i];
+    if(p[0]==id) {
+      var min=p[1];
+      var max=p[2];
+      setSliderRange(id,min,max);
+      return;
+    }
+  }
 }
 
+function stashSliderRange(id,min,max) {
+  setSliderRange(id,min,max);
+  saveSliders.push([id,min,max]); 
+}
 
-// particular to our dataset..
+// process x axis's gating
+function xRangeClick() {
+  if(savePlotP !== "histograms") {
+    window.console.log("WARNING, can only gate histograms..");
+    resetSliderRange("#channel1_slider");
+    return;
+  }
+  var val = jQuery('#channel1_slider').slider("option", "values");
+  var _x=rangeItByValue(saveKeyX,val[0], val[1]);
+  var _r=rangeOfHistogram(saveXPlot);
+  slider_X_dirty=true;
+  gateItHistogram(saveXPlot,_x, _r[0], _r[1]);
+}
+
+function yRangeClick() {
+  if(savePlotP !== "histograms") {
+    window.console.log("WARNING, can only gate histograms..");
+    resetSliderRange("#channel2_slider");
+    return;
+  }
+  var val = jQuery('#channel2_slider').slider("option", "values");
+  var _y=rangeItByValue(saveKeyY,val[0], val[1]);
+  var _r=rangeOfHistogram(saveYPlot);
+  slider_Y_dirty=true;
+  gateItHistogram(saveYPlot,_y,_r[0],_r[1]);
+}
+
 function setupDropDowns(keys) {
   var xlist = document.getElementById('x-list');
   var ylist = document.getElementById('y-list');
@@ -376,8 +442,8 @@ function allHistograms(fstub, blob, keys) {
      var key=keys[i];
      var _data=getHistogramAt(blob, key);
      change2Log(_data);
-     var _layout=getHistogramDefaultLayout(fstub,key);
-     addAPlot('#myViewer',_data, _layout, 450, 300);
+     var _layout=getHistogramDefaultLayout(fstub,key,null);
+     var dummy=addAPlot('#myViewer',_data, _layout, 450, 300);
   }
 }
 
@@ -385,47 +451,162 @@ function allHistograms(fstub, blob, keys) {
 function addHistograms(fstub, blob, keyX, keyY) {
   var _data=getHistogramAt(blob, keyX,'blue');
   change2Log(_data);
-  var _t=maxOnDataBlob(_data);
-  var _s=minOnDataBlob(_data);
-  var _max=_t[0];
-  var _min=_s[0]
+  var tmpX=_data[0]['x'];
+  var _max1=Math.max.apply(Math,tmpX);
+  var _min1=Math.min.apply(Math,tmpX);
+  if(slider_X_dirty) {
+      slider_X_dirty=false;
+      stashSliderRange("#channel1_slider", _min1, _max1);
+  }
   var _data2=getHistogramAt(blob, keyY,'red');
   change2Log(_data2);
-  _t=maxOnDataBlob(_data2);
-  _s=minOnDataBlob(_data2);
-  if(_t[0]>_max)
-     _max=_t[0];
-  if(_s[0]<_min)
-     _min=_s[0];
+  var tmpY=_data2[0]['x'];
+  var _max2=Math.max.apply(Math,tmpY);
+  var _min2=Math.min.apply(Math,tmpY);
+  if(slider_Y_dirty) {
+      slider_Y_dirty=false;
+      stashSliderRange("#channel2_slider", _min2, _max2);
+  }
+  var _max=(_max1>_max2)?_max1:_max2;
+  var _min=(_min1<_min2)?_min1:_min2;
 
-  var _layout=getHistogramDefaultLayout(fstub,trimKey(keyX),_min,_max,'red');
-  var _layout2=getHistogramDefaultLayout(fstub,trimKey(keyY),_min,_max,'blue');
+  var _layout=getHistogramDefaultLayout(fstub,trimKey(keyX), [_min,_max]);
+  var _layout2=getHistogramDefaultLayout(fstub,trimKey(keyY), [_min,_max]);
 
-  addAPlot('#myViewer',_data, _layout,450,300);
-  addAPlot('#myViewer',_data2, _layout2,450,300);
+  saveXPlot=addAPlot('#myViewer',_data, _layout,450,300);
+  saveYPlot=addAPlot('#myViewer',_data2, _layout2,450,300);
+}
+
+function rangeOfHistogram(oldPlot) {
+    var oldDiv=oldPlot;
+    var r1=oldDiv.layout.xaxis.range;
+    var r2=oldDiv.layout.yaxis.range;
+    return [r1, r2];
+}
+
+function rangeOfMixed(oldPlot) {
+    var oldDiv=oldPlot;
+    var a=oldDiv.layout.xaxis.range;
+    var b=oldDiv.layout.yaxis.range;
+    var c=oldDiv.layout.xaxis2.range;
+    var d=oldDiv.layout.yaxis2.range;
+    return [a,b,c,d];
+}
+
+function rangeOfScatter(oldPlot) {
+    var oldDiv=oldPlot;
+    var a=oldDiv.layout.xaxis.range;
+    var b=oldDiv.layout.yaxis.range;
+    return [a,b];
+}
+
+// log value of original data
+function getOriginalChannelData(key) {
+  var s=saveBlob[key];
+  var x= Object.keys(s).map(function(k) { return parseFloat(s[k]) });
+  x=logValue(x);
+  return x;
+}
+
+function gateItHistogram(oldPlot,new_x, xrange, yrange) {
+    var oldDiv=oldPlot;
+    oldDiv.data[0].x=new_x;
+    if(xrange) 
+      oldDiv.layout.xaxis.range=xrange;
+    if(yrange) { 
+      oldDiv.layout.yaxis.range=yrange;
+      oldDiv.layout.yaxis.autorange=false;
+    }
+    Plotly.redraw(oldDiv);
+}
+
+function gateItScatter(oldPlot,new_x,new_y,xrange,yrange) {
+    var oldDiv=oldPlot;
+    oldDiv.data[0].x=new_x;
+    oldDiv.data[0].y=new_y;
+    if(xrange) {
+      oldDiv.layout.xaxis.range=xrange;
+      oldDiv.layout.xaxis.autorange=false;
+    }
+    if(yrange) {
+      oldDiv.layout.yaxis.range=yrange;
+      oldDiv.layout.yaxis.autorange=false;
+    }
+    Plotly.redraw(oldDiv);
+}
+
+function gateItMixed(oldPlot,new_x,new_y,xrange,yrange,xrange2,yrange2) {
+    var oldDiv=oldPlot;
+    oldDiv.data[0].x=new_x;
+    oldDiv.data[1].x=new_x;
+    oldDiv.data[2].x=new_x;
+    oldDiv.data[3].x=NaN;
+    oldDiv.data[0].y=new_y;
+    oldDiv.data[1].y=new_y;
+    oldDiv.data[2].y=NaN;
+    oldDiv.data[3].y=new_y;
+    if(xrange) {
+      oldDiv.layout.xaxis.range=xrange;
+      oldDiv.layout.xaxis.autorange=false;
+    }
+    if(yrange) {
+      oldDiv.layout.yaxis.range=yrange;
+      oldDiv.layout.yaxis.autorange=false;
+    }
+    if(xrange2) {
+      oldDiv.layout.xaxis2.range=xrange2;
+      oldDiv.layout.xaxis2.autorange=false;
+    }
+    if(yrange2) {
+      oldDiv.layout.yaxis2.range=yrange2;
+      oldDiv.layout.yaxis2.autorange=false;
+    }
+    Plotly.redraw(oldDiv);
+}
+
+/* chop off entries that is not within the min, max range */
+function rangeItByValue(key,min,max) {
+    var _p=getOriginalChannelData(key);
+    var _cnt=_p.length;
+    var _v;
+    var _new=[];
+    for( i=0; i< _cnt; i++) {
+      _v=_p[i];
+      if( _v >= min && _v <= max) {
+         _new.push(_v);
+      }
+    }
+    return _new;
+}
+
+/* chop off entries that are not within the index min,max */
+function rangeItByTime(key,minIdx,maxIdx) {
+    var _p=getOriginalChannelData(key);
+    var _new=_p.slice(minIdx, maxIdx);
+    return _new;
 }
 
 // scatter
 function addTwoD(fstub,blob,keyX,keyY) {
   var _data=getScatterSetAt(blob, keyX, keyY);
   change2Log(_data);
-  var _layout=getScatterSetDefaultLayout(fstub,trimKey(keyX), trimKey(keyY));
-  addAPlot('#myViewer',_data, _layout, 600,600);
+  var _layout=getScatterSetDefaultLayout(fstub,trimKey(keyX),trimKey(keyY),null,null);
+  saveScatterPlot=addAPlot('#myViewer',_data, _layout, 600,600);
 }
 
 // scatter with histogram subplots
 function addMixed(fstub, blob, keyX, keyY) {
   var _data=getMixedSetAt(blob, keyX, keyY);
   change2Log(_data);
-  var _layout=getMixedSetDefaultLayout(fstub,trimKey(keyX), trimKey(keyY));
-  addAPlot('#myViewer',_data, _layout, 600, 600);
+  var _layout=getMixedSetDefaultLayout(fstub,trimKey(keyX), trimKey(keyY),null,null);
+  saveMixPlot=addAPlot('#myViewer',_data, _layout, 600, 600);
 }
 
 function updateMixed(fstub, blob, keyX, keyY) {
-    var mixDiv=savePlot;
+    var mixDiv=saveMixPlot;
     var _data=getMixedSetAt(blob, keyX, keyY);
     change2Log(_data);
-    var _layout=getMixedSetDefaultLayout(fstub,trimKey(keyX), trimKey(keyY));
+    var _layout=getMixedSetDefaultLayout(fstub,trimKey(keyX), trimKey(keyY),null,null);
     var _p=mixDiv.data;
     mixDiv.data=_data;
     var _t=_layout['title']; 
@@ -437,7 +618,14 @@ function updateMixed(fstub, blob, keyX, keyY) {
 
 function updatePlot(fstub,blob,keyX,keyY,plotP) {
   $('#myViewer').empty();
-  savePlot=null;
+  saveMixPlot=null;
+  saveXPlot=null; 
+  saveYPlot=null;
+  saveScatterPlot=null;
+  saveBlob=blob;
+  savePlotP=plotP;
+  saveKeyY=keyY;
+  saveKeyX=keyX;
   switch (plotP) {
     case 'mixed' :
       addMixed(fstub, blob, keyX, keyY);
@@ -448,6 +636,14 @@ function updatePlot(fstub,blob,keyX,keyY,plotP) {
     case 'histograms':
       addHistograms(fstub, blob, keyX, keyY);
       break;
+  }
+  if(slider_X_dirty) {
+    slider_X_dirty=false;
+    resetSliderRange("#channel1_slider");
+  }
+  if(slider_Y_dirty) {
+    slider_Y_dirty=false;
+    resetSliderRange("#channel2_slider");
   }
 }
 
@@ -469,14 +665,22 @@ jQuery(document).ready(function() {
      fstub=chopForStub(url);
      blob=loadBlobFromJsonFile(url);
      dataKeys=setupUI(blob);
+     slider_X_dirty=true;
+     slider_Y_dirty=true;
      } else {
         if(enableEmbedded) {
           // do nothing
           } else {
             blob=loadBlobFromInner(fstub);
             dataKeys=setupUI(blob);
+            slider_X_dirty=true;
+            slider_Y_dirty=true;
         }
   }
+  saveBlob=blob;
+  saveKeyX=keyX;
+  saveKeyY=keyY;
+  savePlotP=plotP;
 
   $('#x-list').change(function() {
     var xkey = document.getElementById("x-list").value;
@@ -484,6 +688,7 @@ jQuery(document).ready(function() {
       // no change
       } else {
       keyX=xkey;
+      slider_X_dirty=true;
       updatePlot(fstub, blob,keyX,keyY,plotP);
     }
   });
@@ -493,6 +698,7 @@ jQuery(document).ready(function() {
       // no change
       } else {
       keyY=ykey;
+      slider_Y_dirty=true;
       updatePlot(fstub, blob,keyX,keyY,plotP);
     }
   });
@@ -503,6 +709,8 @@ jQuery(document).ready(function() {
       } else {
         fstub=ddata;
         blob=loadBlobFromInner(fstub);
+        slider_X_dirty=true;
+        slider_Y_dirty=true;
         updatePlot(fstub,blob,keyX,keyY,plotP);
     }
   });
@@ -522,4 +730,43 @@ jQuery(document).ready(function() {
   }
 })
 
+// FUN-O
+function animateByTimeClick() { 
+  var max=2000;
+  var step=100;
+  var i=1;
+  if(slider_X_dirty) {
+    slider_X_dirty=false;
+    resetSliderRange("#channel1_slider");
+  }
+  if(slider_Y_dirty) {
+    slider_Y_dirty=false;
+    resetSliderRange("#channel2_slider");
+  }
+  var i_id=setInterval(function() {
+    var _maxIdx=i*step;
+    i=i+1;
+
+    var _x=rangeItByTime(saveKeyX,0,_maxIdx);
+    var _y=rangeItByTime(saveKeyY,0,_maxIdx);
+    switch (savePlotP) {
+        case 'histograms': // there are two of the plots
+          var r1=rangeOfHistogram(saveXPlot);
+          var r2=rangeOfHistogram(saveYPlot);
+          gateItHistogram(saveXPlot,_x, r1[0], r1[1]);
+          gateItHistogram(saveYPlot,_y, r2[0], r2[1]);
+          break;
+        case 'mixed':
+          var r=rangeOfMixed(saveMixPlot);
+          gateItMixed(saveMixPlot,_x,_y,r[0],r[1],r[2],r[3]);
+          break;
+        case 'twod':
+          var r=rangeOfScatter(saveScatterPlot);
+          gateItScatter(saveScatterPlot,_x,_y,r[0],r[1]);
+          break;
+    }
+       if (_maxIdx > max)
+           clearInterval(i_id);
+    }, 10);
+}
 
