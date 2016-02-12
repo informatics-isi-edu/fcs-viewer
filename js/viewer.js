@@ -430,10 +430,18 @@ function setupDropDowns(keys) {
       _plist += '<option value="' + 'twod' + '">' + '2d scatter' + '</option>';
       _plist += '<option value="' + 'histograms' + '">' + 'histograms' + '</option>';
   plist.innerHTML = _plist;
+}
 
+function setupDataListWithInner() {
   var dlist = document.getElementById('data-list');
   var _dlist = '<option selected="selected" value="' + 'inf_072514.EP5' + '">' + 'inf_072514.EP5.FCS' + '</option>';
       _dlist += '<option value="' + 'exp_012116kv.EP5' + '">' + 'exp_012116kv.EP5.FCS' + '</option>';
+  dlist.innerHTML = _dlist;
+} 
+
+function setupDataListWithFstub(fstub) {
+  var dlist = document.getElementById('data-list');
+  var _dlist = '<option selected="selected" value="' + fstub + '">' + fstub + '</option>';
   dlist.innerHTML = _dlist;
 } 
 
@@ -667,6 +675,7 @@ jQuery(document).ready(function() {
      dataKeys=setupUI(blob);
      slider_X_dirty=true;
      slider_Y_dirty=true;
+     setupDataListWithFstub(fstub);
      } else {
         if(enableEmbedded) {
           // do nothing
@@ -675,6 +684,7 @@ jQuery(document).ready(function() {
             dataKeys=setupUI(blob);
             slider_X_dirty=true;
             slider_Y_dirty=true;
+            setupDataListWithInner();
         }
   }
   saveBlob=blob;
