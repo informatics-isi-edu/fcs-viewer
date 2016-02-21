@@ -1,0 +1,22 @@
+http://bioinformin.net/cytometry.php
+
+Analysis
+
+Flow analysis - scatterplot Data from cytometers are usually analysed by examina
+tion of graphs. Regions on the graphs correspond to cell populations. By dissect
+ing cell populations, their parameters such as number of cells, average cell siz
+e and protein abundance can be assessed.
+
+Flow cytometry data are presented on either histograms (one parameter graph) or 
+scatterplots (two parameters). If more than two parameters are analysed, then co
+mbination of several plots is used.
+
+Regions drawn on plots to dissect cell populations are called gates. There are m
+any types of gates and in a single experiment usually a combination of gates is 
+used to define population of interest. The overall analysis can become very comp
+lex when more than two or three fluorescent colours are analysed.
+
+Due to this complexity and to subjectivity of drawing the gates there is conside
+rable effort made to propose some advanced analytical methods for flow cytometry
+ data.
+

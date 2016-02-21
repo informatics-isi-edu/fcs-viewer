@@ -110,6 +110,8 @@ function getScatterSetDefaultLayout(sample,xkey,ykey,xrange,yrange){
     } else {
       tmpx= { "title":xkey+"(log)", "type":"log" };
       tmpy= { "title":ykey+"(log)", "type":"log" };
+//      tmpx= { "title":xkey+"(log)"};
+//      tmpy= { "title":ykey+"(log)"};
   }
   var p= {
       "width": 600,
