@@ -42,28 +42,28 @@
 <div id='viewerBlock'>
 <div id='myViewer'></div>
 </div>
-<div id='controlBlock' style='margin-left:20px;width:600px;display:none; height:100px;'>
-   <div id='demo-data' style='display:none; float:left;margin:5px; width:80%;'>
-     Select dataset..
-     <select required id="data-list"></select>
+<div id='controlBlock' style='margin-left:20px;width:600px;display:none; height:150px;'>
+   <div style='float:left;margin:5px; width:80%;'>
      Select plot..
-     <select required id="plot-list" style='float:right'></select>
-   </div>
-   <div id='real-data' style='float:left;margin:5px; width:80%;'>
-     Select plot..
-     <select required id="plot-list" style='float:right'></select>
+     <select required id="plot-list"></select>
+     <div id='demoData' style='display:none;float:right'>
+       Select dataset..
+       <select required id="data-list" ></select>
+     </div>
    </div>
    <br>
-   <div style='float:left;margin:5px; width:80%;'>
-     Select 1st channel..
+   <div id='channel1' style='float:left;margin:5px; width:80%;'>
+     Select channel..
      <select required id="x-list"></select>
      <button id="x-control-button" style="float:right" onclick="xRangeClick()"><a id="x-toggle" class="glyphicon glyphicon-refresh" style="border:solid 2px black; color:blue;"></a></button>
+     <input id="slider1Range" style="border:0; color:black; font-weight:bold;">
      <div id='channel1_slider' style='border:solid 2px grey; float:right;margin-top:5px;margin-right:20px; width:120px'> </div>
    </div>
-   <div style='float:left;margin:5px; width:80%;'>
-     Select 2nd channel..
+   <div id='channel2' style='display:;float:left;margin:5px; width:80%;'>
+     Select channel..
      <select required id="y-list"></select>
      <button id="y-control-button" style="float:right" onclick="yRangeClick()"><a id="y-toggle" class="glyphicon glyphicon-refresh" style="border:solid 2px black; color:red;"></a></button>
+     <input id="slider2Range" style="border:0; color:black; font-weight:bold;">
      <div id='channel2_slider' style='border:solid 2px grey;float:right;margin-top:5px;margin-right:20px;width:120px;'> </div>
    </div>
    <br>

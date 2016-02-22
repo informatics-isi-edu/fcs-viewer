@@ -62,9 +62,11 @@ f.write(json)
 f.close()
 
 figure();
-#sample.plot('Yellow Fluorescence (YLW-HLin)');
+#sample.plot('Yellow Fluorescence (YLW-HLog)');
 #sample.plot('Green Fluorescence (GRN-HLin)');
-sample.plot(['Forward Scatter (FSC-HLog)', 'Red Fluorescence (RED-HLog)']);
+#sample.plot(['Forward Scatter (FSC-HLog)']);
+#sample.plot(['Red Fluorescence (RED-HLog)']);
+sample.plot(['Forward Scatter (FSC-HLin)', 'Red Fluorescence (RED-HLin)']);
 #sample.plot(['Green Fluorescence (GRN-HLin)', 'Red Fluorescence (RED-HLin)']);
 show();
 

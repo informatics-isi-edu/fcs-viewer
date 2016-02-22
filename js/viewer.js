@@ -5,6 +5,7 @@ var saveXPlot=null;
 var saveYPlot=null;
 var saveScatterPlot=null;
 var saveBlob=null;
+var inLog=true;
 
 var slider_X_dirty=false;
 var slider_Y_dirty=false;
@@ -64,13 +65,25 @@ function getHistogramDefaultLayout(sample,key,range){
   var t="Histogram of "+key+ "<br> in "+sample;
   var tmp;
   if(range) {
-    tmp= { "title":key+"(log)", "range": range };
+    if(inLog) {
+      tmp= { "title":key+"(log)", "range": range };
+      } else {
+        tmp= { "title":key, "range": range };
+    }
     } else {
-      tmp= { "title":key+"(log)" };
+      if(inLog) {
+        tmp= { "title":key+"(log)" };
+        } else {
+          tmp= { "title":key };
+      }
+  }
+  var _height=300;
+  if(savePlotP === 'ahistogram') {
+    _height=600;
   }
   var p= {
         "width": 600,
-        "height": 300,
+        "height": _height,
         "xaxis": tmp,
         "yaxis": { "title":"Count"}
         };   
@@ -96,7 +109,7 @@ function getScatterSetAt(blob, xkey, ykey) {
 }
 
 function getScatterSetDefaultLayout(sample,xkey,ykey,xrange,yrange){
-  var t= xkey+" vs "+ykey+"<br> in "+sample;
+  var t= xkey+" vs "+ykey;
 /*
  var xrange=[ 0.654, 0.889 ];
  var yrange=[ -1.349, 0.769 ];
@@ -170,7 +183,7 @@ function getMixedSetAt(blob, xkey, ykey) {
 }
 
 function getMixedSetDefaultLayout(sample,xkey,ykey,xrange,yrange,xrange2,yrange2){
-  var t= xkey+" vs "+ykey+"<br> in "+sample;
+  var t= xkey+" vs "+ykey;
   var tmpx, tmpy, tmpx2, tmpy2;
   if(xrange) {
     tmpx= { "domain": [0, 0.85], "showgrid": true, "title": xkey,
@@ -323,28 +336,72 @@ XXXX
 XXXX
 ***/
 
-function setupSliders() {
+/* initial setup of the slider .. */
+function setupSliders(blob) {
+
+  var s=blob[DEFAULTCHANNEL1];
+  var x=Object.keys(s).map(function(k) { return parseFloat(s[k]) });
+  x=logValue(x);
+  var _max=Math.round(Math.max.apply(Math,x)*1000)/1000;
+  var _min=Math.round(Math.min.apply(Math,x)*1000)/1000;
   jQuery("#channel1_slider").slider({
     range: true,
-    min: 0,
+    min: _min,
     step: 0.001,
-    max: 1,
-    values: [0, 1]
+    max: _max,
+    disabled: false,
+    values: [_min, _max],
+    slide: function(event,ui) {
+        $("#slider1Range").val(ui.values[0]+" - "+ui.values[1]);
+    },
+    change: function(event,ui) {
+        $("#slider1Range").val(ui.values[0]+" - "+ui.values[1]);
+    }
   });
+  $("#slider1Range").val( _min+" - "+_max);
 
+  s=blob[DEFAULTCHANNEL2];
+  x=Object.keys(s).map(function(k) { return parseFloat(s[k]) });
+  x=logValue(x);
+  _max=Math.round(Math.max.apply(Math,x)*1000)/1000;
+  _min=Math.round(Math.min.apply(Math,x)*1000)/1000;
   jQuery("#channel2_slider").slider({
     range: true,
-    min: 0,
+    min: _min,
     step: 0.001,
-    max: 1,
-    values: [0, 1]
+    max: _max, 
+    disabled: false,
+    values: [_min, _max],
+    slide: function(event,ui) {
+        $("#slider2Range").val(ui.values[0]+" - "+ui.values[1]);
+    },
+    change: function(event,ui) {
+        $("#slider2Range").val(ui.values[0]+" - "+ui.values[1]);
+    }
   });
+  $("#slider2Range").val( _min+" - "+_max);
+
+  if (savePlotP ==='mixed' || savePlotP === 'twod') {
+     jQuery("#channel1_slider").slider("option", "disabled",true);
+     jQuery("#channel2_slider").slider("option", "disabled",true);
+  }
 }
 
-function setSliderRange(id,min,max) {
-  jQuery(id).slider("option", "max", max);
-  jQuery(id).slider("option", "min", min);
-  jQuery(id).slider("option", "values", [min,max]);
+function enableSliders() {
+  jQuery("#channel1_slider").slider("option", "disabled",false);
+  jQuery("#channel2_slider").slider("option", "disabled",false);
+}
+function disableSliders() {
+  jQuery("#channel1_slider").slider("option", "disabled",true);
+  jQuery("#channel2_slider").slider("option", "disabled",true);
+}
+
+function setSliderLimit(id,min,max) {
+  var _max=Math.round(max *1000)/1000;
+  var _min=Math.round(min *1000)/1000;
+  jQuery(id).slider("option", "max", _max);
+  jQuery(id).slider("option", "min", _min);
+  jQuery(id).slider("option", "values", [_min,_max]);
 }
  
 function isEmpty(obj) {
@@ -356,6 +413,7 @@ function isEmpty(obj) {
 }
 
 function resetSliderRange(id) {
+window.console.log("resetSliderRange"+id);
   if(isEmpty(saveSliders)) {
     var min=jQuery(id).slider("option", "min");
     var max=jQuery(id).slider("option", "max");
@@ -363,23 +421,25 @@ function resetSliderRange(id) {
   }
   for (var i=0; i< saveSliders.length; i++) {
     var p=saveSliders[i];
-    if(p[0]==id) {
+    if(p[0]===id) {
       var min=p[1];
       var max=p[2];
-      setSliderRange(id,min,max);
+      setSliderLimit(id,min,max);
       return;
     }
   }
+window.console.log("PANIC...on slider maybe.."+id);
 }
 
-function stashSliderRange(id,min,max) {
-  setSliderRange(id,min,max);
+function stashSliderLimit(id,min,max) {
+window.console.log("calling stash.."+id);
+  setSliderLimit(id,min,max);
   saveSliders.push([id,min,max]); 
 }
 
 // process x axis's gating
 function xRangeClick() {
-  if(savePlotP !== "histograms") {
+  if(savePlotP !== "histograms" && savePlotP !== "ahistogram") {
     window.console.log("WARNING, can only gate histograms..");
     resetSliderRange("#channel1_slider");
     return;
@@ -431,17 +491,23 @@ function setupDropDowns(keys) {
   var _plist = '<option selected="selected" value="' + 'mixed' + '">' + 'mixed plots' + '</option>';
       _plist += '<option value="' + 'twod' + '">' + '2d scatter' + '</option>';
       _plist += '<option value="' + 'histograms' + '">' + 'histograms' + '</option>';
+      _plist += '<option value="' + 'ahistogram' + '">' + 'a histogram' + '</option>';
   plist.innerHTML = _plist;
 }
 
 function setupDataListWithInner() {
+  var ddata = document.getElementById('demoData');
+  ddata.style.display = '';
   var dlist = document.getElementById('data-list');
   var _dlist = '<option selected="selected" value="' + 'inf_072514.EP5' + '">' + 'inf_072514.EP5.FCS' + '</option>';
       _dlist += '<option value="' + 'exp_012116kv.EP5' + '">' + 'exp_012116kv.EP5.FCS' + '</option>';
   dlist.innerHTML = _dlist;
+  return dlist.value;
 } 
 
 function setupDataListWithFstub(fstub) {
+  var ddata = document.getElementById('demoData');
+  ddata.style.display = '';
   var dlist = document.getElementById('data-list');
   var _dlist = '<option selected="selected" value="' + fstub + '">' + fstub + '</option>';
   dlist.innerHTML = _dlist;
@@ -457,26 +523,53 @@ function allHistograms(fstub, blob, keys) {
   }
 }
 
+// a single histogram
+function addAHistogram(fstub, blob, key) {
+  // always reset
+  var yplot = document.getElementById('channel2');
+  yplot.style.display = 'none';
+  saveYPlot=null;
+
+  var _data=getHistogramAt(blob, key,'blue');
+  if(inLog) {
+    change2Log(_data);
+  }
+
+  var tmp=_data[0]['x'];
+  var _max=Math.max.apply(Math,tmp);
+  var _min=Math.min.apply(Math,tmp);
+  slider_X_dirty=true;
+  stashSliderLimit("#channel1_slider", _min, _max);
+
+  var _layout=getHistogramDefaultLayout(fstub,trimKey(key), [_min,_max]);
+
+  saveXPlot=addAPlot('#myViewer',_data, _layout,600,600);
+}
+
 // histograms
 function addHistograms(fstub, blob, keyX, keyY) {
   var _data=getHistogramAt(blob, keyX,'blue');
   change2Log(_data);
+
   var tmpX=_data[0]['x'];
   var _max1=Math.max.apply(Math,tmpX);
   var _min1=Math.min.apply(Math,tmpX);
   if(slider_X_dirty) {
       slider_X_dirty=false;
-      stashSliderRange("#channel1_slider", _min1, _max1);
+      stashSliderLimit("#channel1_slider", _min1, _max1);
   }
+
   var _data2=getHistogramAt(blob, keyY,'red');
   change2Log(_data2);
+
   var tmpY=_data2[0]['x'];
   var _max2=Math.max.apply(Math,tmpY);
   var _min2=Math.min.apply(Math,tmpY);
   if(slider_Y_dirty) {
       slider_Y_dirty=false;
-      stashSliderRange("#channel2_slider", _min2, _max2);
+      stashSliderLimit("#channel2_slider", _min2, _max2);
   }
+
   var _max=(_max1>_max2)?_max1:_max2;
   var _min=(_min1<_min2)?_min1:_min2;
 
@@ -519,6 +612,8 @@ function getOriginalChannelData(key) {
 }
 
 function gateItHistogram(oldPlot,new_x, xrange, yrange) {
+window.console.log("gating it..new_x,"+new_x);
+window.console.log("gating it..xrange,"+xrange+" yrange,"+yrange);
     var oldDiv=oldPlot;
     oldDiv.data[0].x=new_x;
     if(xrange) 
@@ -600,6 +695,23 @@ function rangeItByTime(key,minIdx,maxIdx) {
 function addTwoD(fstub,blob,keyX,keyY) {
   var _data=getScatterSetAt(blob, keyX, keyY);
   change2Log(_data);
+
+  {
+    var tmp=_data[0]['x'];
+    var _max=Math.max.apply(Math,tmp);
+    var _min=Math.min.apply(Math,tmp);
+    slider_X_dirty=true;
+    stashSliderLimit("#channel1_slider", _min, _max);
+  }
+  {
+    var tmp=_data[0]['y'];
+    var _max=Math.max.apply(Math,tmp);
+    var _min=Math.min.apply(Math,tmp);
+    slider_Y_dirty=true;
+    stashSliderLimit("#channel2_slider", _min, _max);
+  }
+
+
   var _layout=getScatterSetDefaultLayout(fstub,trimKey(keyX),trimKey(keyY),null,null);
   saveScatterPlot=addAPlot('#myViewer',_data, _layout, 600,600);
 }
@@ -608,6 +720,22 @@ function addTwoD(fstub,blob,keyX,keyY) {
 function addMixed(fstub, blob, keyX, keyY) {
   var _data=getMixedSetAt(blob, keyX, keyY);
   change2Log(_data);
+
+  {
+    var tmp=_data[0]['x'];
+    var _max=Math.max.apply(Math,tmp);
+    var _min=Math.min.apply(Math,tmp);
+    slider_X_dirty=true;
+    stashSliderLimit("#channel1_slider", _min, _max);
+  }
+  {
+    var tmp=_data[0]['y'];
+    var _max=Math.max.apply(Math,tmp);
+    var _min=Math.min.apply(Math,tmp);
+    slider_Y_dirty=true;
+    stashSliderLimit("#channel2_slider", _min, _max);
+  }
+
   var _layout=getMixedSetDefaultLayout(fstub,trimKey(keyX), trimKey(keyY),null,null);
   saveMixPlot=addAPlot('#myViewer',_data, _layout, 600, 600);
 }
@@ -628,6 +756,10 @@ function updateMixed(fstub, blob, keyX, keyY) {
 
 function updatePlot(fstub,blob,keyX,keyY,plotP) {
   $('#myViewer').empty();
+  // reset this 
+  var yplot = document.getElementById('channel2');
+  yplot.style.display = '';
+  saveSliders=[];
   saveMixPlot=null;
   saveXPlot=null; 
   saveYPlot=null;
@@ -638,15 +770,23 @@ function updatePlot(fstub,blob,keyX,keyY,plotP) {
   saveKeyX=keyX;
   switch (plotP) {
     case 'mixed' :
+      disableSliders();
       addMixed(fstub, blob, keyX, keyY);
       break;
     case 'twod' :
+      disableSliders();
       addTwoD(fstub, blob, keyX, keyY);
       break;
     case 'histograms':
+      enableSliders();
       addHistograms(fstub, blob, keyX, keyY);
       break;
+    case 'ahistogram':
+      enableSliders();
+      addAHistogram(fstub, blob, keyX);
+      break;
   }
+  // always reset it
   if(slider_X_dirty) {
     slider_X_dirty=false;
     resetSliderRange("#channel1_slider");
@@ -657,6 +797,7 @@ function updatePlot(fstub,blob,keyX,keyY,plotP) {
   }
 }
 
+/*****MAIN*****/
 jQuery(document).ready(function() {
 
   var blob=null;
@@ -668,6 +809,8 @@ jQuery(document).ready(function() {
   var keyY=DEFAULTCHANNEL2;
   var plotP='mixed';
 
+  savePlotP=plotP;
+
   var args=document.location.href.split('?');
 //http://localhost/plotly/view.html?http://localhost/data/plotly/inf_072514.EP5.json
   if (args.length === 2) {
@@ -677,22 +820,17 @@ jQuery(document).ready(function() {
      dataKeys=setupUI(blob);
      slider_X_dirty=true;
      slider_Y_dirty=true;
-     setupDataListWithFstub(fstub);
+//     setupDataListWithFstub(fstub);
      } else {
-        if(enableEmbedded) {
-          // do nothing
-          } else {
-            blob=loadBlobFromInner(fstub);
-            dataKeys=setupUI(blob);
-            slider_X_dirty=true;
-            slider_Y_dirty=true;
-            setupDataListWithInner();
-        }
+       var nfstub=setupDataListWithInner();
+       blob=loadBlobFromInner(nfstub);
+       dataKeys=setupUI(blob);
+       slider_X_dirty=true;
+       slider_Y_dirty=true;
   }
   saveBlob=blob;
   saveKeyX=keyX;
   saveKeyY=keyY;
-  savePlotP=plotP;
 
   $('#x-list').change(function() {
     var xkey = document.getElementById("x-list").value;
@@ -762,6 +900,10 @@ function animateByTimeClick() {
     var _x=rangeItByTime(saveKeyX,0,_maxIdx);
     var _y=rangeItByTime(saveKeyY,0,_maxIdx);
     switch (savePlotP) {
+        case 'ahistogram': // there is just one histogram plot
+          var r1=rangeOfHistogram(saveXPlot);
+          gateItHistogram(saveXPlot,_x, r1[0], r1[1]);
+          break;
         case 'histograms': // there are two of the plots
           var r1=rangeOfHistogram(saveXPlot);
           var r2=rangeOfHistogram(saveYPlot);

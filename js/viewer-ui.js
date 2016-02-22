@@ -26,7 +26,7 @@ function setupUI(blob) {
     if(bElm)
       bElm.style.display = '';
       setupDropDowns(dataKeys);
-      setupSliders();
+      setupSliders(blob);
     } else {
 // send to outside 'window'
       postChannelList('onChannelList', dataKeys);
