@@ -9,6 +9,10 @@
 import os
 import sys
 import pdb
+
+import matplotlib
+matplotlib.use("Pdf")
+
 from FlowCytometryTools import *
 from pylab import *
 
@@ -51,24 +55,24 @@ subset=sample.data[findlist]
 #print type(subset)
 #print subset[:2]
 
-f = open(resultID+".csv", 'w')
-csv =subset.to_csv()
-f.write(csv)
-f.close()
+#f = open(resultID+".csv", 'w')
+#csv =subset.to_csv()
+#f.write(csv)
+#f.close()
 
 f = open(resultID+".json", 'w')
 json =subset.to_json()
 f.write(json)
 f.close()
 
-figure();
+#figure();
 #sample.plot('Yellow Fluorescence (YLW-HLog)');
 #sample.plot('Green Fluorescence (GRN-HLin)');
 #sample.plot(['Forward Scatter (FSC-HLog)']);
 #sample.plot(['Red Fluorescence (RED-HLog)']);
-sample.plot(['Forward Scatter (FSC-HLin)', 'Red Fluorescence (RED-HLin)']);
+#sample.plot(['Forward Scatter (FSC-HLin)', 'Red Fluorescence (RED-HLin)']);
 #sample.plot(['Green Fluorescence (GRN-HLin)', 'Red Fluorescence (RED-HLin)']);
-show();
+#show();
 
 
 
