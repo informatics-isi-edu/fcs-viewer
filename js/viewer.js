@@ -4,6 +4,7 @@ var saveMixPlot=null;
 var saveXPlot=null;
 var saveYPlot=null;
 var saveScatterPlot=null;
+var saveGatedScatterPlot=null;
 var saveBlob=null;
 var inLog=true;
 
@@ -136,6 +137,138 @@ function getScatterSetDefaultLayout(sample,xkey,ykey,xrange,yrange){
       };   
   return p;
 }
+
+/*
+           xgate
+             |
+             v
+          Q1 | Q2
+          ---+--- <-ygate
+          Q3 | Q4
+*/
+
+function split2Quaters(x,y,xgate,ygate) {
+  var Q1x=[], Q1y=[];
+  var Q2x=[], Q2y=[];
+  var Q3x=[], Q3y=[];
+  var Q4x=[], Q4y=[];
+
+  var cnt=y.length;
+  if(xgate != null && ygate != null) {
+    for(var i=0; i<cnt; i++) {
+      if(x[i]>xgate) {
+        if(y[i]>ygate) { // Q2
+          Q2x.push(x[i]); Q2y.push(y[i]);
+          } else { // Q4
+          Q4x.push(x[i]); Q4y.push(y[i]);
+        }
+        } else {
+          if(y[i]>ygate) { // Q1
+            Q1x.push(x[i]); Q1y.push(y[i]);
+            } else { // Q3
+            Q3x.push(x[i]); Q3y.push(y[i]);
+          }
+      } 
+    }
+    } else {
+      Q2x=x;
+      Q2y=y;
+  }
+
+  return [[Q1x,Q1y],[Q2x,Q2y],[Q3x,Q3y],[Q4x,Q4y]];
+}
+
+function getGatedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
+  /* separate into 4 sets of traces */
+  var xs=blob[xkey];
+  var ys=blob[ykey];
+  var x= Object.keys(xs).map(function(k) { return parseFloat(xs[k]) });
+  var y= Object.keys(ys).map(function(k) { return parseFloat(ys[k]) });
+
+  var Q=split2Quaters(x,y,xgate,ygate);
+  var Q1x=Q[0][0], Q1y=Q[0][1];
+  var Q2x=Q[1][0], Q2y=Q[1][1];
+  var Q3x=Q[2][0], Q3y=Q[2][1];
+  var Q4x=Q[3][0], Q4y=Q[3][1];
+
+  /* separate into 4 sets of traces */
+  var data= [ 
+             {
+                "name": "Q1",
+                "x": Q1x,
+                "y": Q1y,
+                "mode": "markers",
+                "marker": {
+                    "color": "green",
+                    "size": 5,
+                    "line": {"color": "black", "width": 1},
+                    "opacity": 0.7
+                  },
+                "type":"scatter" 
+             },
+             {
+                "name": "Q2",
+                "x": Q2x,
+                "y": Q2y,
+                "mode": "markers",
+                "marker": {
+                    "color": "red",
+                    "size": 5,
+                    "line": {"color": "black", "width": 1},
+                    "opacity": 0.7
+                  },
+                "type":"scatter" 
+             },
+             {
+                "name": "Q3",
+                "x": Q3x,
+                "y": Q3y,
+                "mode": "markers",
+                "marker": {
+                    "color": "orange",
+                    "size": 5,
+                    "line": {"color": "black", "width": 1},
+                    "opacity": 0.7
+                  },
+                "type":"scatter" 
+             },
+             {
+                "name": "Q4",
+                "x": Q4x,
+                "y": Q4y,
+                "mode": "markers",
+                "marker": {
+                    "color": "blue",
+                    "size": 5,
+                    "line": {"color": "black", "width": 1},
+                    "opacity": 0.7
+                  },
+                "type":"scatter" 
+             }
+  ];
+  return data;
+}
+
+
+function getGatedScatterSetDefaultLayout(sample,xkey,ykey,xrange,yrange){
+  var tmpx, tmpy;
+  if(xrange && yrange) {
+    tmpx= { "title":xkey+"(log)", "range": xrange };
+    tmpy= { "title":ykey+"(log)", "range": yrange };
+    } else {
+      tmpx= { "title":xkey+"(log)"};
+      tmpy= { "title":ykey+"(log)"};
+  }
+  var p= {
+      "width": 600,
+      "height": 600,
+      "plot_bgcolor": 'rgb(223, 223, 223)',
+      "xaxis": tmpx,
+      "yaxis": tmpy
+      };   
+  return p;
+}
+
 
 //https://plot.ly/javascript/2d-density-plots/
 function getMixedSetAt(blob, xkey, ykey) {
@@ -271,7 +404,6 @@ function minmaxOnChannel(blob, key) {
   var _min=Math.min.apply(Math,ss);
   _max=Math.log(_max);
   _min=Math.log(_min);
-  window.console.log("getting minmax on "+key+" "+_min+" "+_max);
   return [_min, _max];
 }
 
@@ -342,8 +474,8 @@ function setupSliders(blob) {
   var s=blob[DEFAULTCHANNEL1];
   var x=Object.keys(s).map(function(k) { return parseFloat(s[k]) });
   x=logValue(x);
-  var _max=Math.round(Math.max.apply(Math,x)*1000)/1000;
-  var _min=Math.round(Math.min.apply(Math,x)*1000)/1000;
+  var _max=Math.ceil(Math.max.apply(Math,x)*1000)/1000;
+  var _min=Math.floor(Math.min.apply(Math,x)*1000)/1000;
   jQuery("#channel1_slider").slider({
     range: true,
     min: _min,
@@ -351,11 +483,15 @@ function setupSliders(blob) {
     max: _max,
     disabled: false,
     values: [_min, _max],
-    slide: function(event,ui) {
-        $("#slider1Range").val(ui.values[0]+" - "+ui.values[1]);
-    },
     change: function(event,ui) {
-        $("#slider1Range").val(ui.values[0]+" - "+ui.values[1]);
+        var t=jQuery("#channel1_slider").slider("option","range");
+        if(t === "max") 
+          $("#slider1Range").val(ui.values[0]+" ( upto "+ui.values[1]+")");
+          else
+            $("#slider1Range").val(ui.values[0]+" - "+ui.values[1]);
+    },
+    stop:function(event,ui) {
+        xRangeClick();
     }
   });
   $("#slider1Range").val( _min+" - "+_max);
@@ -363,8 +499,8 @@ function setupSliders(blob) {
   s=blob[DEFAULTCHANNEL2];
   x=Object.keys(s).map(function(k) { return parseFloat(s[k]) });
   x=logValue(x);
-  _max=Math.round(Math.max.apply(Math,x)*1000)/1000;
-  _min=Math.round(Math.min.apply(Math,x)*1000)/1000;
+  _max=Math.ceil(Math.max.apply(Math,x)*1000)/1000;
+  _min=Math.floor(Math.min.apply(Math,x)*1000)/1000;
   jQuery("#channel2_slider").slider({
     range: true,
     min: _min,
@@ -372,33 +508,47 @@ function setupSliders(blob) {
     max: _max, 
     disabled: false,
     values: [_min, _max],
-    slide: function(event,ui) {
-        $("#slider2Range").val(ui.values[0]+" - "+ui.values[1]);
-    },
     change: function(event,ui) {
-        $("#slider2Range").val(ui.values[0]+" - "+ui.values[1]);
+        var t=jQuery("#channel2_slider").slider("option","range");
+        if(t === "max")
+          $("#slider2Range").val(ui.values[0]+" ( upto "+ui.values[1]+")");
+          else
+            $("#slider2Range").val(ui.values[0]+" - "+ui.values[1]);
+    },
+    stop:function(event,ui) {
+        yRangeClick();
     }
   });
   $("#slider2Range").val( _min+" - "+_max);
-
-  if (savePlotP ==='mixed' || savePlotP === 'twod') {
-     jQuery("#channel1_slider").slider("option", "disabled",true);
-     jQuery("#channel2_slider").slider("option", "disabled",true);
-  }
 }
 
-function enableSliders() {
-  jQuery("#channel1_slider").slider("option", "disabled",false);
-  jQuery("#channel2_slider").slider("option", "disabled",false);
+function enableSlidersWithFixedMin() {
+  enableRangeSliders();
+  jQuery("#channel1_slider").slider("option","range","max");
+  jQuery("#channel2_slider").slider("option","range","max");
 }
-function disableSliders() {
-  jQuery("#channel1_slider").slider("option", "disabled",true);
-  jQuery("#channel2_slider").slider("option", "disabled",true);
+
+function enableRangeSliders() {
+  var xselect = document.getElementById('x_range_slider');
+  xselect.style.display = '';
+  var yselect = document.getElementById('y_range_slider');
+  yselect.style.display = '';
+  jQuery("#channel1_slider").slider("option","range",true);
+  jQuery("#channel2_slider").slider("option","range",true);
+  slider_X_dirty=true;
+  slider_Y_dirty=true;
+}
+
+function disableRangeSliders() {
+  var xselect = document.getElementById('x_range_slider');
+  xselect.style.display = 'none';
+  var yselect = document.getElementById('y_range_slider');
+  yselect.style.display = 'none';
 }
 
 function setSliderLimit(id,min,max) {
-  var _max=Math.round(max *1000)/1000;
-  var _min=Math.round(min *1000)/1000;
+  var _max=Math.ceil(max *1000)/1000;
+  var _min=Math.floor(min *1000)/1000;
   jQuery(id).slider("option", "max", _max);
   jQuery(id).slider("option", "min", _min);
   jQuery(id).slider("option", "values", [_min,_max]);
@@ -413,7 +563,7 @@ function isEmpty(obj) {
 }
 
 function resetSliderRange(id) {
-window.console.log("resetSliderRange"+id);
+//window.console.log("resetSliderRange"+id);
   if(isEmpty(saveSliders)) {
     var min=jQuery(id).slider("option", "min");
     var max=jQuery(id).slider("option", "max");
@@ -428,40 +578,60 @@ window.console.log("resetSliderRange"+id);
       return;
     }
   }
-window.console.log("PANIC...on slider maybe.."+id);
 }
 
 function stashSliderLimit(id,min,max) {
-window.console.log("calling stash.."+id);
   setSliderLimit(id,min,max);
   saveSliders.push([id,min,max]); 
 }
 
 // process x axis's gating
 function xRangeClick() {
-  if(savePlotP !== "histograms" && savePlotP !== "ahistogram") {
+  if(savePlotP !== "histograms" && savePlotP !== "ahistogram" && savePlotP !== "gtwod") {
     window.console.log("WARNING, can only gate histograms..");
     resetSliderRange("#channel1_slider");
     return;
   }
-  var val = jQuery('#channel1_slider').slider("option", "values");
-  var _x=rangeItByValue(saveKeyX,val[0], val[1]);
-  var _r=rangeOfHistogram(saveXPlot);
-  slider_X_dirty=true;
-  gateItHistogram(saveXPlot,_x, _r[0], _r[1]);
+
+  if(saveXPlot) {
+    var val = jQuery('#channel1_slider').slider("option", "values");
+    var _x=rangeItByValue(saveKeyX,val[0], val[1]);
+    var _r=rangeOfHistogram(saveXPlot);
+    gateItHistogram(saveXPlot,_x, _r[0], _r[1]);
+  }
+  if(saveGatedScatterPlot) {
+    var val = jQuery('#channel1_slider').slider("option", "values");
+    var gateX=val[0];
+    val = jQuery('#channel2_slider').slider("option", "values");
+    var gateY=val[0];
+    var _x=getOriginalChannelData(saveKeyX);
+    var _y=getOriginalChannelData(saveKeyY);
+    gateItGatedScatter(saveGatedScatterPlot,_x,_y,null,null,gateX,gateY);
+  }
 }
 
 function yRangeClick() {
-  if(savePlotP !== "histograms") {
+  if(savePlotP !== "histograms" && savePlotP !== "gtwod") {
     window.console.log("WARNING, can only gate histograms..");
     resetSliderRange("#channel2_slider");
     return;
   }
-  var val = jQuery('#channel2_slider').slider("option", "values");
-  var _y=rangeItByValue(saveKeyY,val[0], val[1]);
-  var _r=rangeOfHistogram(saveYPlot);
-  slider_Y_dirty=true;
-  gateItHistogram(saveYPlot,_y,_r[0],_r[1]);
+
+  if(saveYPlot) {
+    var val = jQuery('#channel2_slider').slider("option", "values");
+    var _y=rangeItByValue(saveKeyY,val[0], val[1]);
+    var _r=rangeOfHistogram(saveYPlot);
+    gateItHistogram(saveYPlot,_y,_r[0],_r[1]);
+  }
+  if(saveGatedScatterPlot) {
+    var val = jQuery('#channel1_slider').slider("option", "values");
+    var gateX=val[0];
+    val = jQuery('#channel2_slider').slider("option", "values");
+    var gateY=val[0];
+    var _x=getOriginalChannelData(saveKeyX);
+    var _y=getOriginalChannelData(saveKeyY);
+    gateItGatedScatter(saveGatedScatterPlot,_x,_y,null,null,gateX,gateY);
+  }
 }
 
 function setupDropDowns(keys) {
@@ -490,6 +660,7 @@ function setupDropDowns(keys) {
   var plist = document.getElementById('plot-list');
   var _plist = '<option selected="selected" value="' + 'mixed' + '">' + 'mixed plots' + '</option>';
       _plist += '<option value="' + 'twod' + '">' + '2d scatter' + '</option>';
+      _plist += '<option value="' + 'gtwod' + '">' + 'gated scatter' + '</option>';
       _plist += '<option value="' + 'histograms' + '">' + 'histograms' + '</option>';
       _plist += '<option value="' + 'ahistogram' + '">' + 'a histogram' + '</option>';
   plist.innerHTML = _plist;
@@ -612,8 +783,6 @@ function getOriginalChannelData(key) {
 }
 
 function gateItHistogram(oldPlot,new_x, xrange, yrange) {
-window.console.log("gating it..new_x,"+new_x);
-window.console.log("gating it..xrange,"+xrange+" yrange,"+yrange);
     var oldDiv=oldPlot;
     oldDiv.data[0].x=new_x;
     if(xrange) 
@@ -639,6 +808,36 @@ function gateItScatter(oldPlot,new_x,new_y,xrange,yrange) {
     }
     Plotly.redraw(oldDiv);
 }
+
+
+function gateItGatedScatter(oldPlot,new_x,new_y,xrange,yrange,gateX,gateY) {
+    var oldDiv=oldPlot;
+    var new_data=split2Quaters(new_x,new_y,gateX,gateY);
+
+    oldDiv.data[0].x=new_data[0][0];
+    oldDiv.data[0].y=new_data[0][1];
+
+    oldDiv.data[1].x=new_data[1][0];
+    oldDiv.data[1].y=new_data[1][1];
+
+    oldDiv.data[2].x=new_data[2][0];
+    oldDiv.data[2].y=new_data[2][1];
+
+    oldDiv.data[3].x=new_data[3][0];
+    oldDiv.data[3].y=new_data[3][1];
+
+    if(xrange) {
+      oldDiv.layout.xaxis.range=xrange;
+      oldDiv.layout.xaxis.autorange=false;
+    }
+    if(yrange) {
+      oldDiv.layout.yaxis.range=yrange;
+      oldDiv.layout.yaxis.autorange=false;
+    }
+
+    Plotly.redraw(oldDiv);
+}
+
 
 function gateItMixed(oldPlot,new_x,new_y,xrange,yrange,xrange2,yrange2) {
     var oldDiv=oldPlot;
@@ -711,9 +910,35 @@ function addTwoD(fstub,blob,keyX,keyY) {
     stashSliderLimit("#channel2_slider", _min, _max);
   }
 
-
   var _layout=getScatterSetDefaultLayout(fstub,trimKey(keyX),trimKey(keyY),null,null);
   saveScatterPlot=addAPlot('#myViewer',_data, _layout, 600,600);
+}
+
+// scatter with gating
+function addGTwoD(fstub,blob,keyX,keyY,gateX,gateY) {
+
+  var _data=getGatedScatterSetAt(blob, keyX, keyY,gateX,gateY);
+  change2Log(_data);
+
+  {
+    var tmp0=_data[0]['x'];
+    var tmp=tmp0.concat(_data[1]['x'],_data[2]['x'],_data[3]['x']);
+    var _max=Math.max.apply(Math,tmp);
+    var _min=Math.min.apply(Math,tmp);
+    slider_X_dirty=true;
+    stashSliderLimit("#channel1_slider", _min, _max);
+  }
+  {
+    var tmp0=_data[0]['y'];
+    var tmp=tmp0.concat(_data[1]['y'],_data[2]['y'],_data[3]['y']);
+    var _max=Math.max.apply(Math,tmp);
+    var _min=Math.min.apply(Math,tmp);
+    slider_Y_dirty=true;
+    stashSliderLimit("#channel2_slider", _min, _max);
+  }
+
+  var _layout=getGatedScatterSetDefaultLayout(fstub,trimKey(keyX),trimKey(keyY),null,null);
+  saveGatedScatterPlot=addAPlot('#myViewer',_data, _layout, 600,600);
 }
 
 // scatter with histogram subplots
@@ -764,25 +989,30 @@ function updatePlot(fstub,blob,keyX,keyY,plotP) {
   saveXPlot=null; 
   saveYPlot=null;
   saveScatterPlot=null;
+  saveGatedScatterPlot=null;
   saveBlob=blob;
   savePlotP=plotP;
   saveKeyY=keyY;
   saveKeyX=keyX;
   switch (plotP) {
     case 'mixed' :
-      disableSliders();
+      disableRangeSliders();
       addMixed(fstub, blob, keyX, keyY);
       break;
     case 'twod' :
-      disableSliders();
+      disableRangeSliders();
       addTwoD(fstub, blob, keyX, keyY);
       break;
+    case 'gtwod' :
+      enableSlidersWithFixedMin();
+      addGTwoD(fstub, blob, keyX, keyY);
+      break;
     case 'histograms':
-      enableSliders();
+      enableRangeSliders();
       addHistograms(fstub, blob, keyX, keyY);
       break;
     case 'ahistogram':
-      enableSliders();
+      enableRangeSliders();
       addAHistogram(fstub, blob, keyX);
       break;
   }
@@ -791,7 +1021,7 @@ function updatePlot(fstub,blob,keyX,keyY,plotP) {
     slider_X_dirty=false;
     resetSliderRange("#channel1_slider");
   }
-  if(slider_Y_dirty) {
+  if(slider_Y_dirty && (plotP !== "ahistogram") ) {
     slider_Y_dirty=false;
     resetSliderRange("#channel2_slider");
   }
@@ -876,6 +1106,7 @@ jQuery(document).ready(function() {
 
 // initial plot
   if(!enableEmbedded) {
+    disableRangeSliders();
     addMixed(fstub,blob,keyX,keyY);
   }
 })
@@ -885,14 +1116,7 @@ function animateByTimeClick() {
   var max=2000;
   var step=100;
   var i=1;
-  if(slider_X_dirty) {
-    slider_X_dirty=false;
-    resetSliderRange("#channel1_slider");
-  }
-  if(slider_Y_dirty) {
-    slider_Y_dirty=false;
-    resetSliderRange("#channel2_slider");
-  }
+
   var i_id=setInterval(function() {
     var _maxIdx=i*step;
     i=i+1;
@@ -903,12 +1127,15 @@ function animateByTimeClick() {
         case 'ahistogram': // there is just one histogram plot
           var r1=rangeOfHistogram(saveXPlot);
           gateItHistogram(saveXPlot,_x, r1[0], r1[1]);
+          resetSliderRange("#channel1_slider");
           break;
         case 'histograms': // there are two of the plots
           var r1=rangeOfHistogram(saveXPlot);
           var r2=rangeOfHistogram(saveYPlot);
           gateItHistogram(saveXPlot,_x, r1[0], r1[1]);
           gateItHistogram(saveYPlot,_y, r2[0], r2[1]);
+          resetSliderRange("#channel1_slider");
+          resetSliderRange("#channel2_slider");
           break;
         case 'mixed':
           var r=rangeOfMixed(saveMixPlot);
@@ -917,6 +1144,14 @@ function animateByTimeClick() {
         case 'twod':
           var r=rangeOfScatter(saveScatterPlot);
           gateItScatter(saveScatterPlot,_x,_y,r[0],r[1]);
+          break;
+        case 'gtwod':
+          var r=rangeOfScatter(saveGatedScatterPlot);
+          var val = jQuery('#channel1_slider').slider("option", "values");
+          var gateX=val[0];
+          val = jQuery('#channel2_slider').slider("option", "values");
+          var gateY=val[0];
+          gateItGatedScatter(saveGatedScatterPlot,_x,_y,r[0],r[1],gateX,gateY);
           break;
     }
        if (_maxIdx > max)

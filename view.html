@@ -55,20 +55,22 @@
    <div id='channel1' style='float:left;margin:5px; width:80%;'>
      Select channel..
      <select required id="x-list"></select>
-     <button id="x-control-button" style="float:right" onclick="xRangeClick()"><a id="x-toggle" class="glyphicon glyphicon-refresh" style="border:solid 2px black; color:blue;"></a></button>
-     <input id="slider1Range" style="border:0; color:black; font-weight:bold;">
-     <div id='channel1_slider' style='border:solid 2px grey; float:right;margin-top:5px;margin-right:20px; width:120px'> </div>
+     <div id="x_range_slider">
+     <input id="slider1Range" style="margin-left:120px;font-size:12px;color:black;">
+     <div id='channel1_slider' style='border:solid 2px grey; float:right;margin-top:5px;margin-right:20px; width:160px'> </div>
+     </div>
    </div>
    <div id='channel2' style='display:;float:left;margin:5px; width:80%;'>
      Select channel..
      <select required id="y-list"></select>
-     <button id="y-control-button" style="float:right" onclick="yRangeClick()"><a id="y-toggle" class="glyphicon glyphicon-refresh" style="border:solid 2px black; color:red;"></a></button>
-     <input id="slider2Range" style="border:0; color:black; font-weight:bold;">
-     <div id='channel2_slider' style='border:solid 2px grey;float:right;margin-top:5px;margin-right:20px;width:120px;'> </div>
+     <div id="y_range_slider">
+     <input id="slider2Range" style="margin-left:120px;font-size:12px;color:black;">
+     <div id='channel2_slider' style='border:solid 2px grey;float:right;margin-top:5px;margin-right:20px;width:160px;'> </div>
+     </div>
    </div>
    <br>
    <div style="float:left;width:80%;">
-     <button id="time-control-button" style="float:right;border:solid 2px grey;margin-right:20px;" onclick="animateByTimeClick()"><a>animateByTime</a></button>
+     <button id="time-control-button" style="float:left;border:solid 2px grey;margin-right:20px;" onclick="animateByTimeClick()"><a>animateByTime</a></button>
    </div>
 </div>
 </body>

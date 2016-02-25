@@ -1,6 +1,6 @@
 // this is very user/dataset specific information
 
-// to be use to display on the ploat
+// to be use to display on the plot
 // KEYLIST['full key']='shorten key'
 var KEYLIST= { "Forward Scatter (FSC-HLin)": "Forward Scatter",
                "Side Scatter (SSC-HLin)": "Side Scatter",

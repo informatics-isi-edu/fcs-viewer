@@ -1,16 +1,16 @@
+On Mac,
 
 https://github.com/eyurtsev/fcsparser.git
 
 https://github.com/eyurtsev/FlowCytometryTools.git
 =>sudo python setup.py install 
---prefix=/opt/local/Library/Frameworks/Python.framework/Versions/2.7
 
 git://github.com/matplotlib/matplotlib.git
 =>sudo python setup.py install
-sudo pip install numpy --upgrade
 
+sudo pip install numpy --upgrade
 freetype-2.6.3
-libpng-1.6.21
+libpng-1.6.21 (devel version)
 
 
 
