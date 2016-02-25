@@ -147,7 +147,7 @@ function getScatterSetDefaultLayout(sample,xkey,ykey,xrange,yrange){
           Q3 | Q4
 */
 
-function split2Quaters(x,y,xgate,ygate) {
+function split2Quadrants(x,y,xgate,ygate) {
   var Q1x=[], Q1y=[];
   var Q2x=[], Q2y=[];
   var Q3x=[], Q3y=[];
@@ -185,7 +185,7 @@ function getGatedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
   var x= Object.keys(xs).map(function(k) { return parseFloat(xs[k]) });
   var y= Object.keys(ys).map(function(k) { return parseFloat(ys[k]) });
 
-  var Q=split2Quaters(x,y,xgate,ygate);
+  var Q=split2Quadrants(x,y,xgate,ygate);
   var Q1x=Q[0][0], Q1y=Q[0][1];
   var Q2x=Q[1][0], Q2y=Q[1][1];
   var Q3x=Q[2][0], Q3y=Q[2][1];
@@ -812,7 +812,7 @@ function gateItScatter(oldPlot,new_x,new_y,xrange,yrange) {
 
 function gateItGatedScatter(oldPlot,new_x,new_y,xrange,yrange,gateX,gateY) {
     var oldDiv=oldPlot;
-    var new_data=split2Quaters(new_x,new_y,gateX,gateY);
+    var new_data=split2Quadrants(new_x,new_y,gateX,gateY);
 
     oldDiv.data[0].x=new_data[0][0];
     oldDiv.data[0].y=new_data[0][1];

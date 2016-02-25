@@ -3,7 +3,6 @@
 ## usage: ./FCS2JSON.py exp_010214m.EP5.FCS_s3673_13480_1.FCS
 ##
 ## will produce exp_010214m.EP5.FCS_s3673_13480_1.json, 
-##        and   exp_010214m.EP5.FCS_s3673_13480_1.csv
 ##
 
 import os
