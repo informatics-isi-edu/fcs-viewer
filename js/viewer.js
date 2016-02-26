@@ -484,7 +484,7 @@ function loadDataFromFile(fname) {
 
 function logValue(data) {
   var n = data.map(function (v) {  
-    return Math.log(v)
+    return Math.log10(v)
   }); 
   return n;
 }
@@ -507,8 +507,8 @@ function minmaxOnChannel(blob, key) {
   var ss= Object.keys(s).map(function(k) { return parseFloat(s[k]) });
   var _max=Math.max.apply(Math,ss);
   var _min=Math.min.apply(Math,ss);
-  _max=Math.log(_max);
-  _min=Math.log(_min);
+  _max=Math.log10(_max);
+  _min=Math.log10(_min);
   return [_min, _max];
 }
 
