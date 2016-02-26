@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 
-## usage: ./FCS2JSON.py exp_010214m.EP5.FCS_s3673_13480_1.FCS
+## usage: ./FCS2JSON.py dir/exp_010214m.EP5.FCS
+##        will produce dir/exp_010214m.EP5.json
 ##
-## will produce exp_010214m.EP5.FCS_s3673_13480_1.json, 
+## usage: ./FCS2JSON.py dir/exp_010214m.EP5.FCS outdir
+##        will produce  outdir/exp_010214m.EP5.json
 ##
 
 import os
 import sys
-import pdb
+#import pdb
+import json
 
 import matplotlib
 matplotlib.use("Pdf")
@@ -22,12 +25,20 @@ if(len(sys.argv) < 2) :
 datadir = './'
 datafile=sys.argv[1]
 
-if datafile.endswith('.FCS') or datafile.endswith('.fcs'):
-  resultID = datafile[:-4]
+dfile=os.path.basename(datafile)
+dirname=os.path.dirname(datafile)
+
+if dfile.endswith('.FCS') or dfile.endswith('.fcs'):
+  resultID = dfile[:-4]
 else:
   print "needs a filename with .FCS ending"
   exit()
-  
+
+if(len(sys.argv) > 2):
+  outdir=sys.argv[2]
+else:
+  outdir=dirname
+
 sample = FCMeasurement(ID=resultID, datafile=datafile)
 
 #print "=================="
@@ -48,20 +59,30 @@ for x in channel_names :
 #print findlist
 
 subset=sample.data[findlist]
+#pdb.set_trace()
 
 ##http://stackoverflow.com/questions/12065885/how-to-filter-the-dataframe-rows-of-pandas-by-within-in
 #subset's type is <class 'pandas.core.frame.DataFrame'>
 #print type(subset)
 #print subset[:2]
 
-#f = open(resultID+".csv", 'w')
+target=os.path.join(outdir,resultID)
+
+#f = open(target+".csv", 'w')
 #csv =subset.to_csv()
 #f.write(csv)
 #f.close()
 
-f = open(resultID+".json", 'w')
-json =subset.to_json()
-f.write(json)
+
+#print type(subset)
+f = open(target+".json", 'w')
+json_str =subset.to_json()
+#print type(json_str)
+json_obj=json.loads(json_str)
+json_obj['meta']="sample.meta";
+#print type(json_obj)
+
+f.write(json.dumps(json_obj))
 f.close()
 
 #figure();
