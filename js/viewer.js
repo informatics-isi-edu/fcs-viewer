@@ -191,7 +191,7 @@ function split2Quadrants(x,y,xgate,ygate) {
 
   nums.sort();
   var mid = Math.floor(nums.length / 2);
-window.console.log(num.length %2);
+window.console.log(nums.length %2);
 
   var median = nums.length % 2 ? nums[mid] : (nums[mid-1] + nums[mid] / 2 );
 
