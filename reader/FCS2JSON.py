@@ -49,20 +49,12 @@ channel_names=sample.channel_names
 print channel_names
 
 findlist=[]
-#for x in channel_names :
-#  if x.find('Time') != -1 :
-#    findlist.append(x)
-#    continue
-#  if x.find('HLin') == -1 :
-#    continue
-#  findlist.append(x)
-
 for x in channel_names :
-#  if x.find('Time') != -1 :
-#    findlist.append(x)
-#    continue
-#  if x.find('HLin') == -1 :
-#    continue
+  if x.find('Time') != -1 :
+    findlist.append(x)
+    continue
+  if x.find('HLin') == -1 :
+    continue
   findlist.append(x)
 
 #print findlist

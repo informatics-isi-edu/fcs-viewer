@@ -177,7 +177,6 @@ function split2Quadrants(x,y,xgate,ygate) {
          Q2z.push(i);
   }
 
-/**** MEI
   var q1xcnt=Q1x.length;
   var percentTotal=Math.floor((q1xcnt/cnt)*100);
   var max=Math.max.apply(Math,Q1x);
@@ -189,8 +188,12 @@ function split2Quadrants(x,y,xgate,ygate) {
      nums.push(Q1x[j]);
   }
   var mean = sum/q1xcnt;
-  var mid = nums.sort( function( a, b){ return a - b } ).length / 2;
-  var median = mid % 2 ? nums[mid] : (nums[mid-1] + nums[mid] / 2 );
+
+  nums.sort();
+  var mid = Math.floor(nums.length / 2);
+window.console.log(num.length %2);
+
+  var median = nums.length % 2 ? nums[mid] : (nums[mid-1] + nums[mid] / 2 );
 
 window.console.log("FOR Quadrant 1..");
 window.console.log(q1xcnt + " out of "+cnt);
@@ -201,7 +204,6 @@ window.console.log("sum"+sum);
 window.console.log("mean"+mean);
 window.console.log("mid"+mid);
 window.console.log("median"+median);
-****/
   
   return [[Q1x,Q1y,Q1z],[Q2x,Q2y,Q2z],[Q3x,Q3y,Q2z],[Q4x,Q4y,Q4z]];
 }
