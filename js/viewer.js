@@ -148,34 +148,62 @@ function getScatterSetDefaultLayout(sample,xkey,ykey,xrange,yrange){
 */
 
 function split2Quadrants(x,y,xgate,ygate) {
-  var Q1x=[], Q1y=[];
-  var Q2x=[], Q2y=[];
-  var Q3x=[], Q3y=[];
-  var Q4x=[], Q4y=[];
+  var Q1x=[], Q1y=[], Q1z=[];
+  var Q2x=[], Q2y=[], Q2z=[];
+  var Q3x=[], Q3y=[], Q3z=[];
+  var Q4x=[], Q4y=[], Q4z=[];
 
   var cnt=y.length;
   if(xgate != null && ygate != null) {
     for(var i=0; i<cnt; i++) {
       if(x[i]>xgate) {
         if(y[i]>ygate) { // Q2
-          Q2x.push(x[i]); Q2y.push(y[i]);
+          Q2x.push(x[i]); Q2y.push(y[i]); Q2z.push(i);
           } else { // Q4
-          Q4x.push(x[i]); Q4y.push(y[i]);
+          Q4x.push(x[i]); Q4y.push(y[i]); Q4z.push(i);
         }
         } else {
           if(y[i]>ygate) { // Q1
-            Q1x.push(x[i]); Q1y.push(y[i]);
+            Q1x.push(x[i]); Q1y.push(y[i]); Q1z.push(i);
             } else { // Q3
-            Q3x.push(x[i]); Q3y.push(y[i]);
+            Q3x.push(x[i]); Q3y.push(y[i]); Q3z.push(i);
           }
       } 
     }
     } else {
       Q2x=x;
       Q2y=y;
+      for(var i=0; i<cnt; i++) 
+         Q2z.push(i);
   }
 
-  return [[Q1x,Q1y],[Q2x,Q2y],[Q3x,Q3y],[Q4x,Q4y]];
+/**** MEI
+  var q1xcnt=Q1x.length;
+  var percentTotal=Math.floor((q1xcnt/cnt)*100);
+  var max=Math.max.apply(Math,Q1x);
+  var min=Math.min.apply(Math,Q1x);
+  var sum=0;
+  var nums=[];
+  for(var j=0;j<q1xcnt;j++) {
+     sum = sum + Q1x[j]; 
+     nums.push(Q1x[j]);
+  }
+  var mean = sum/q1xcnt;
+  var mid = nums.sort( function( a, b){ return a - b } ).length / 2;
+  var median = mid % 2 ? nums[mid] : (nums[mid-1] + nums[mid] / 2 );
+
+window.console.log("FOR Quadrant 1..");
+window.console.log(q1xcnt + " out of "+cnt);
+window.console.log("percentTotal"+percentTotal);
+window.console.log("max"+max);
+window.console.log("min"+min);
+window.console.log("sum"+sum);
+window.console.log("mean"+mean);
+window.console.log("mid"+mid);
+window.console.log("median"+median);
+****/
+  
+  return [[Q1x,Q1y,Q1z],[Q2x,Q2y,Q2z],[Q3x,Q3y,Q2z],[Q4x,Q4y,Q4z]];
 }
 
 function getGatedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
@@ -262,6 +290,7 @@ function getGatedScatterSetDefaultLayout(sample,xkey,ykey,xrange,yrange){
   var p= {
       "width": 600,
       "height": 600,
+      "hovermode": 'closest',
       "plot_bgcolor": 'rgb(223, 223, 223)',
       "xaxis": tmpx,
       "yaxis": tmpy
@@ -269,6 +298,82 @@ function getGatedScatterSetDefaultLayout(sample,xkey,ykey,xrange,yrange){
   return p;
 }
 
+
+
+function getGated3DScatterSetAt(blob, xkey, ykey, xgate, ygate) {
+  /* separate into 4 sets of traces */
+  var xs=blob[xkey];
+  var ys=blob[ykey];
+  var x= Object.keys(xs).map(function(k) { return parseFloat(xs[k]) });
+  var y= Object.keys(ys).map(function(k) { return parseFloat(ys[k]) });
+
+  var Q=split2Quadrants(x,y,xgate,ygate);
+  var Q1x=Q[0][0], Q1y=Q[0][1], Q1z=Q[0][2];
+  var Q2x=Q[1][0], Q2y=Q[1][1], Q2z=Q[1][2];
+  var Q3x=Q[2][0], Q3y=Q[2][1], Q3z=Q[2][2];
+  var Q4x=Q[3][0], Q4y=Q[3][1], Q4z=Q[3][2];
+
+  /* separate into 4 sets of traces */
+  var data= [ 
+             {
+                "name": "Q1",
+                "x": Q1x,
+                "y": Q1y,
+                "z": Q1z,
+                "mode": "markers",
+                "marker": {
+                    "color": "green",
+                    "size": 5,
+                    "line": {"color": "black", "width": 1},
+                    "opacity": 0.7
+                  },
+                "type":"scatter" 
+             },
+             {
+                "name": "Q2",
+                "x": Q2x,
+                "y": Q2y,
+                "z": Q2z,
+                "mode": "markers",
+                "marker": {
+                    "color": "red",
+                    "size": 5,
+                    "line": {"color": "black", "width": 1},
+                    "opacity": 0.7
+                  },
+                "type":"scatter" 
+             },
+             {
+                "name": "Q3",
+                "x": Q3x,
+                "y": Q3y,
+                "z": Q3z,
+                "mode": "markers",
+                "marker": {
+                    "color": "orange",
+                    "size": 5,
+                    "line": {"color": "black", "width": 1},
+                    "opacity": 0.7
+                  },
+                "type":"scatter" 
+             },
+             {
+                "name": "Q4",
+                "x": Q4x,
+                "y": Q4y,
+                "z": Q4z,
+                "mode": "markers",
+                "marker": {
+                    "color": "blue",
+                    "size": 5,
+                    "line": {"color": "black", "width": 1},
+                    "opacity": 0.7
+                  },
+                "type":"scatter" 
+             }
+  ];
+  return data;
+}
 
 //https://plot.ly/javascript/2d-density-plots/
 function getMixedSetAt(blob, xkey, ykey) {

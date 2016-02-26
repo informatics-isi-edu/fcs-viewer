@@ -39,6 +39,7 @@ if(len(sys.argv) > 2):
 else:
   outdir=dirname
 
+#pdb.set_trace()
 sample = FCMeasurement(ID=resultID, datafile=datafile)
 
 #print "=================="
@@ -48,12 +49,20 @@ channel_names=sample.channel_names
 print channel_names
 
 findlist=[]
+#for x in channel_names :
+#  if x.find('Time') != -1 :
+#    findlist.append(x)
+#    continue
+#  if x.find('HLin') == -1 :
+#    continue
+#  findlist.append(x)
+
 for x in channel_names :
-  if x.find('Time') != -1 :
-    findlist.append(x)
-    continue
-  if x.find('HLin') == -1 :
-    continue
+#  if x.find('Time') != -1 :
+#    findlist.append(x)
+#    continue
+#  if x.find('HLin') == -1 :
+#    continue
   findlist.append(x)
 
 #print findlist
@@ -74,12 +83,13 @@ target=os.path.join(outdir,resultID)
 #f.close()
 
 
-#print type(subset)
 f = open(target+".json", 'w')
 json_str =subset.to_json()
 #print type(json_str)
 json_obj=json.loads(json_str)
-json_obj['meta']="sample.meta";
+
+#meta_str=json.dumps(sample.meta);
+#json_obj['meta']= meta_str;
 #print type(json_obj)
 
 f.write(json.dumps(json_obj))
