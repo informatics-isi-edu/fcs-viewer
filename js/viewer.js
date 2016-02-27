@@ -138,6 +138,40 @@ function getScatterSetDefaultLayout(sample,xkey,ykey,xrange,yrange){
   return p;
 }
 
+
+// These are calculated before converted to log values
+function calcQuadrantStats(values,totalcnt,msg) {
+  var qcnt=values.length;
+  var ret= msg+"<br>";
+  if ( qcnt == 0)
+     return ret;
+  var percentTotal=Math.round((qcnt/totalcnt)*100);
+  var max=Math.max.apply(Math,values);
+      max=Math.round(max * 10000)/10000;
+  var min=Math.min.apply(Math,values);
+      min=Math.round(min * 10000)/10000;
+      ret=ret+("count "+qcnt+"<br>");
+      ret=ret+("max "+max+"<br>min "+min+"<br>");
+  var sum=0;
+  var nums=[];
+  for(var j=0;j<qcnt;j++) {
+     sum = sum + values[j]; 
+     nums.push(values[j]);
+  }
+  var mean = sum/qcnt;
+  mean=Math.round(Math.pow(10,mean));
+  nums.sort();
+  var mid = Math.floor(nums.length / 2);
+  var median = nums.length % 2 ? nums[mid] :((nums[mid-1] + nums[mid])/2);
+  median = Math.round(Math.pow(10,median));
+
+      ret=ret+"percentTotal "+percentTotal+"<br>";
+      ret=ret+ "mean "+mean+"<br>";
+      ret=ret+"median "+median+"<br>";
+  return ret;
+}
+
+
 /*
            xgate
              |
@@ -177,35 +211,12 @@ function split2Quadrants(x,y,xgate,ygate) {
          Q2z.push(i);
   }
 
-  var q1xcnt=Q1x.length;
-  var percentTotal=Math.floor((q1xcnt/cnt)*100);
-  var max=Math.max.apply(Math,Q1x);
-  var min=Math.min.apply(Math,Q1x);
-  var sum=0;
-  var nums=[];
-  for(var j=0;j<q1xcnt;j++) {
-     sum = sum + Q1x[j]; 
-     nums.push(Q1x[j]);
-  }
-  var mean = sum/q1xcnt;
+  var Text1=calcQuadrantStats(Q1x,cnt,'Quadrant 1');
+  var Text2=calcQuadrantStats(Q2x,cnt,'Quadrant 2');
+  var Text3=calcQuadrantStats(Q3x,cnt,'Quadrant 3');
+  var Text4=calcQuadrantStats(Q4x,cnt,'Quadrant 4');
 
-  nums.sort();
-  var mid = Math.floor(nums.length / 2);
-window.console.log(nums.length %2);
-
-  var median = nums.length % 2 ? nums[mid] : (nums[mid-1] + nums[mid] / 2 );
-
-window.console.log("FOR Quadrant 1..");
-window.console.log(q1xcnt + " out of "+cnt);
-window.console.log("percentTotal"+percentTotal);
-window.console.log("max"+max);
-window.console.log("min"+min);
-window.console.log("sum"+sum);
-window.console.log("mean"+mean);
-window.console.log("mid"+mid);
-window.console.log("median"+median);
-  
-  return [[Q1x,Q1y,Q1z],[Q2x,Q2y,Q2z],[Q3x,Q3y,Q2z],[Q4x,Q4y,Q4z]];
+  return [[Q1x,Q1y,Q1z,Text1],[Q2x,Q2y,Q2z,Text2],[Q3x,Q3y,Q2z,Text3],[Q4x,Q4y,Q4z,Text4]];
 }
 
 function getGatedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
@@ -216,10 +227,10 @@ function getGatedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
   var y= Object.keys(ys).map(function(k) { return parseFloat(ys[k]) });
 
   var Q=split2Quadrants(x,y,xgate,ygate);
-  var Q1x=Q[0][0], Q1y=Q[0][1];
-  var Q2x=Q[1][0], Q2y=Q[1][1];
-  var Q3x=Q[2][0], Q3y=Q[2][1];
-  var Q4x=Q[3][0], Q4y=Q[3][1];
+  var Q1x=Q[0][0], Q1y=Q[0][1], Text1=Q[0][3];
+  var Q2x=Q[1][0], Q2y=Q[1][1], Text2=Q[1][3];
+  var Q3x=Q[2][0], Q3y=Q[2][1], Text3=Q[2][3];
+  var Q4x=Q[3][0], Q4y=Q[3][1], Text4=Q[3][3];
 
   /* separate into 4 sets of traces */
   var data= [ 
@@ -227,9 +238,12 @@ function getGatedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
                 "name": "Q1",
                 "x": Q1x,
                 "y": Q1y,
+                "ax": 0,
+                "ay" : -40,
+                "text" : Text1,
                 "mode": "markers",
                 "marker": {
-                    "color": "green",
+                    "color": "blue",
                     "size": 5,
                     "line": {"color": "black", "width": 1},
                     "opacity": 0.7
@@ -240,6 +254,7 @@ function getGatedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
                 "name": "Q2",
                 "x": Q2x,
                 "y": Q2y,
+                "text" : Text2,
                 "mode": "markers",
                 "marker": {
                     "color": "red",
@@ -253,6 +268,7 @@ function getGatedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
                 "name": "Q3",
                 "x": Q3x,
                 "y": Q3y,
+                "text" : Text3,
                 "mode": "markers",
                 "marker": {
                     "color": "orange",
@@ -266,9 +282,10 @@ function getGatedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
                 "name": "Q4",
                 "x": Q4x,
                 "y": Q4y,
+                "text" : Text4,
                 "mode": "markers",
                 "marker": {
-                    "color": "blue",
+                    "color": "green",
                     "size": 5,
                     "line": {"color": "black", "width": 1},
                     "opacity": 0.7
@@ -383,12 +400,6 @@ function getMixedSetAt(blob, xkey, ykey) {
   var x= Object.keys(xs).map(function(k) { return parseFloat(xs[k]) });
   var ys=blob[ykey];
   var y= Object.keys(ys).map(function(k) { return parseFloat(ys[k]) });
-/*
-  var xrange=[ 0.654, 0.889 ];
-  var yrange=[ -1.349, 0.769 ];
-  var xxrange=[ 4.668, 7.48 ];
-  var yyrange=[ 0, 4.28 ];
-*/
   var data= [ { "x": x,
                 "y": y, 
                 "name": "points",
@@ -923,15 +934,20 @@ function gateItGatedScatter(oldPlot,new_x,new_y,xrange,yrange,gateX,gateY) {
 
     oldDiv.data[0].x=new_data[0][0];
     oldDiv.data[0].y=new_data[0][1];
+    oldDiv.data[0].text=new_data[0][3];
+  
 
     oldDiv.data[1].x=new_data[1][0];
     oldDiv.data[1].y=new_data[1][1];
+    oldDiv.data[1].text=new_data[1][3];
 
     oldDiv.data[2].x=new_data[2][0];
     oldDiv.data[2].y=new_data[2][1];
+    oldDiv.data[2].text=new_data[2][3];
 
     oldDiv.data[3].x=new_data[3][0];
     oldDiv.data[3].y=new_data[3][1];
+    oldDiv.data[3].text=new_data[3][3];
 
     if(xrange) {
       oldDiv.layout.xaxis.range=xrange;
