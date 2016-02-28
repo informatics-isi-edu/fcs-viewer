@@ -52,15 +52,12 @@ function loadBlobFromJsonFile(fname) {
 }
 
 function getHistogramAt(blob, key, color) {
-  var s=blob[key];
-  var x= Object.keys(s).map(function(k) { return parseFloat(s[k]) });
+  var x=getOriginalChannelData(key);
   var data= [ { "x": x, 
                 "marker": { "color":color },
                 "type" :"histogram" } ];
   return data;
 }
-
-// readup on : http://stackoverflow.com/questions/27334585/in-plotly-how-do-i-create-a-linked-x-axis
 
 function getHistogramDefaultLayout(sample,key,range){
   var t="Histogram of "+key+ "<br> in "+sample;
@@ -82,20 +79,59 @@ function getHistogramDefaultLayout(sample,key,range){
   if(savePlotP === 'ahistogram') {
     _height=600;
   }
+
   var p= {
         "width": 600,
         "height": _height,
         "xaxis": tmp,
-        "yaxis": { "title":"Count"}
+        "yaxis": { "title":"Count"} ,
+/* add vertical gating line */
+        shapes : [
+            {
+            'type': 'line',
+            'yref': 'paper', //y axis relative to plot
+            'x0': 0,
+            'y0': 0,
+            'x1': 0,
+            'y1': 1,
+            'line': {
+                'color': 'rgb(50, 171, 96)',
+                'width': 0,
+            }},
+            {
+            'type': 'line',
+            'yref': 'paper', //y axis relative to plot
+            'x0': 0,
+            'y0': 0,
+            'x1': 0,
+            'y1': 1,
+            'line': {
+                'color': 'rgb(50, 71, 96)',
+                'width': 0,
+            }}
+        ]
         };   
   return p;
 }
 
+function setHistogramThreshold(oldPlot,xPos,xPos2){
+    var oldDiv=oldPlot;
+    if(xPos != null) {
+      oldDiv.layout.shapes[0].x0=xPos;
+      oldDiv.layout.shapes[0].x1=xPos;
+      oldDiv.layout.shapes[0].line.width=6;
+    }
+    if(xPos2 != null) {
+      oldDiv.layout.shapes[1].x0=xPos2;
+      oldDiv.layout.shapes[1].x1=xPos2;
+      oldDiv.layout.shapes[1].line.width=6;
+    }
+    Plotly.redraw(oldDiv);
+}
+
 function getScatterSetAt(blob, xkey, ykey) {
-  var xs=blob[xkey];
-  var x= Object.keys(xs).map(function(k) { return parseFloat(xs[k]) });
-  var ys=blob[ykey];
-  var y= Object.keys(ys).map(function(k) { return parseFloat(ys[k]) });
+  var x=getOriginalChannelData(xkey);
+  var y=getOriginalChannelData(ykey);
   var data= [ { "x": x,
                 "y": y, 
                 "mode": "markers",
@@ -142,7 +178,7 @@ function getScatterSetDefaultLayout(sample,xkey,ykey,xrange,yrange){
 // These are calculated before converted to log values
 function calcQuadrantStats(values,totalcnt,msg) {
   var qcnt=values.length;
-  var ret= msg+"<br>";
+  var ret="count "+qcnt+"<br>";
   if ( qcnt == 0)
      return ret;
   var percentTotal=Math.round((qcnt/totalcnt)*100);
@@ -150,7 +186,6 @@ function calcQuadrantStats(values,totalcnt,msg) {
       max=Math.round(max * 10000)/10000;
   var min=Math.min.apply(Math,values);
       min=Math.round(min * 10000)/10000;
-      ret=ret+("count "+qcnt+"<br>");
       ret=ret+("max "+max+"<br>min "+min+"<br>");
   var sum=0;
   var nums=[];
@@ -221,10 +256,8 @@ function split2Quadrants(x,y,xgate,ygate) {
 
 function getGatedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
   /* separate into 4 sets of traces */
-  var xs=blob[xkey];
-  var ys=blob[ykey];
-  var x= Object.keys(xs).map(function(k) { return parseFloat(xs[k]) });
-  var y= Object.keys(ys).map(function(k) { return parseFloat(ys[k]) });
+  var x=getOriginalChannelData(xkey);
+  var y=getOriginalChannelData(ykey);
 
   var Q=split2Quadrants(x,y,xgate,ygate);
   var Q1x=Q[0][0], Q1y=Q[0][1], Text1=Q[0][3];
@@ -244,9 +277,9 @@ function getGatedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
                 "mode": "markers",
                 "marker": {
                     "color": "blue",
-                    "size": 5,
+                    "size": 10,
                     "line": {"color": "black", "width": 1},
-                    "opacity": 0.7
+                    "opacity": 0.6
                   },
                 "type":"scatter" 
              },
@@ -258,9 +291,9 @@ function getGatedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
                 "mode": "markers",
                 "marker": {
                     "color": "red",
-                    "size": 5,
+                    "size": 10,
                     "line": {"color": "black", "width": 1},
-                    "opacity": 0.7
+                    "opacity": 0.6
                   },
                 "type":"scatter" 
              },
@@ -272,9 +305,9 @@ function getGatedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
                 "mode": "markers",
                 "marker": {
                     "color": "orange",
-                    "size": 5,
+                    "size": 10,
                     "line": {"color": "black", "width": 1},
-                    "opacity": 0.7
+                    "opacity": 0.6
                   },
                 "type":"scatter" 
              },
@@ -286,9 +319,9 @@ function getGatedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
                 "mode": "markers",
                 "marker": {
                     "color": "green",
-                    "size": 5,
+                    "size": 10,
                     "line": {"color": "black", "width": 1},
-                    "opacity": 0.7
+                    "opacity": 0.6
                   },
                 "type":"scatter" 
              }
@@ -321,10 +354,8 @@ function getGatedScatterSetDefaultLayout(sample,xkey,ykey,xrange,yrange){
 
 function getGated3DScatterSetAt(blob, xkey, ykey, xgate, ygate) {
   /* separate into 4 sets of traces */
-  var xs=blob[xkey];
-  var ys=blob[ykey];
-  var x= Object.keys(xs).map(function(k) { return parseFloat(xs[k]) });
-  var y= Object.keys(ys).map(function(k) { return parseFloat(ys[k]) });
+  var x=getOriginalChannelData(xkey);
+  var y=getOriginalChannelData(ykey);
 
   var Q=split2Quadrants(x,y,xgate,ygate);
   var Q1x=Q[0][0], Q1y=Q[0][1], Q1z=Q[0][2];
@@ -396,10 +427,8 @@ function getGated3DScatterSetAt(blob, xkey, ykey, xgate, ygate) {
 
 //https://plot.ly/javascript/2d-density-plots/
 function getMixedSetAt(blob, xkey, ykey) {
-  var xs=blob[xkey];
-  var x= Object.keys(xs).map(function(k) { return parseFloat(xs[k]) });
-  var ys=blob[ykey];
-  var y= Object.keys(ys).map(function(k) { return parseFloat(ys[k]) });
+  var x=getOriginalChannelData(xkey);
+  var y=getOriginalChannelData(ykey);
   var data= [ { "x": x,
                 "y": y, 
                 "name": "points",
@@ -588,10 +617,7 @@ XXXX
 
 /* initial setup of the slider .. */
 function setupSliders(blob) {
-
-  var s=blob[DEFAULTCHANNEL1];
-  var x=Object.keys(s).map(function(k) { return parseFloat(s[k]) });
-  x=logValue(x);
+  x=getOriginalChannelData(DEFAULTCHANNEL1);
   var _max=Math.ceil(Math.max.apply(Math,x)*1000)/1000;
   var _min=Math.floor(Math.min.apply(Math,x)*1000)/1000;
   jQuery("#channel1_slider").slider({
@@ -614,9 +640,7 @@ function setupSliders(blob) {
   });
   $("#slider1Range").val( _min+" - "+_max);
 
-  s=blob[DEFAULTCHANNEL2];
-  x=Object.keys(s).map(function(k) { return parseFloat(s[k]) });
-  x=logValue(x);
+  x=getOriginalChannelData(DEFAULTCHANNEL2);
   _max=Math.ceil(Math.max.apply(Math,x)*1000)/1000;
   _min=Math.floor(Math.min.apply(Math,x)*1000)/1000;
   jQuery("#channel2_slider").slider({
@@ -716,6 +740,13 @@ function xRangeClick() {
     var _x=rangeItByValue(saveKeyX,val[0], val[1]);
     var _r=rangeOfHistogram(saveXPlot);
     gateItHistogram(saveXPlot,_x, _r[0], _r[1]);
+
+    var m1= jQuery('#channel1_slider').slider("option", "min");
+    var m2= jQuery('#channel1_slider').slider("option", "max");
+    var t1= (val[0]==m1)? null: val[0];
+    var t2= (val[1]==m2)? null: val[1];
+    if(t1 || t2)
+      setHistogramThreshold(saveXPlot, t1, t2);
   }
   if(saveGatedScatterPlot) {
     var val = jQuery('#channel1_slider').slider("option", "values");
@@ -740,6 +771,13 @@ function yRangeClick() {
     var _y=rangeItByValue(saveKeyY,val[0], val[1]);
     var _r=rangeOfHistogram(saveYPlot);
     gateItHistogram(saveYPlot,_y,_r[0],_r[1]);
+
+    var m1= jQuery('#channel2_slider').slider("option", "min");
+    var m2= jQuery('#channel2_slider').slider("option", "max");
+    var t1= (val[0]==m1)? null: val[0];
+    var t2= (val[1]==m2)? null: val[1];
+    if(t1 || t2)
+      setHistogramThreshold(saveYPlot, t1, t2);
   }
   if(saveGatedScatterPlot) {
     var val = jQuery('#channel1_slider').slider("option", "values");
@@ -806,7 +844,6 @@ function allHistograms(fstub, blob, keys) {
   for(var i=0; i<cnt; i++) {
      var key=keys[i];
      var _data=getHistogramAt(blob, key);
-     change2Log(_data);
      var _layout=getHistogramDefaultLayout(fstub,key,null);
      var dummy=addAPlot('#myViewer',_data, _layout, 450, 300);
   }
@@ -820,10 +857,6 @@ function addAHistogram(fstub, blob, key) {
   saveYPlot=null;
 
   var _data=getHistogramAt(blob, key,'blue');
-  if(inLog) {
-    change2Log(_data);
-  }
-
   var tmp=_data[0]['x'];
   var _max=Math.max.apply(Math,tmp);
   var _min=Math.min.apply(Math,tmp);
@@ -838,8 +871,6 @@ function addAHistogram(fstub, blob, key) {
 // histograms
 function addHistograms(fstub, blob, keyX, keyY) {
   var _data=getHistogramAt(blob, keyX,'blue');
-  change2Log(_data);
-
   var tmpX=_data[0]['x'];
   var _max1=Math.max.apply(Math,tmpX);
   var _min1=Math.min.apply(Math,tmpX);
@@ -849,7 +880,6 @@ function addHistograms(fstub, blob, keyX, keyY) {
   }
 
   var _data2=getHistogramAt(blob, keyY,'red');
-  change2Log(_data2);
 
   var tmpY=_data2[0]['x'];
   var _max2=Math.max.apply(Math,tmpY);
@@ -1016,7 +1046,6 @@ function rangeItByTime(key,minIdx,maxIdx) {
 // scatter
 function addTwoD(fstub,blob,keyX,keyY) {
   var _data=getScatterSetAt(blob, keyX, keyY);
-  change2Log(_data);
 
   {
     var tmp=_data[0]['x'];
@@ -1041,8 +1070,6 @@ function addTwoD(fstub,blob,keyX,keyY) {
 function addGTwoD(fstub,blob,keyX,keyY,gateX,gateY) {
 
   var _data=getGatedScatterSetAt(blob, keyX, keyY,gateX,gateY);
-  change2Log(_data);
-
   {
     var tmp0=_data[0]['x'];
     var tmp=tmp0.concat(_data[1]['x'],_data[2]['x'],_data[3]['x']);
@@ -1067,8 +1094,6 @@ function addGTwoD(fstub,blob,keyX,keyY,gateX,gateY) {
 // scatter with histogram subplots
 function addMixed(fstub, blob, keyX, keyY) {
   var _data=getMixedSetAt(blob, keyX, keyY);
-  change2Log(_data);
-
   {
     var tmp=_data[0]['x'];
     var _max=Math.max.apply(Math,tmp);
@@ -1091,7 +1116,6 @@ function addMixed(fstub, blob, keyX, keyY) {
 function updateMixed(fstub, blob, keyX, keyY) {
     var mixDiv=saveMixPlot;
     var _data=getMixedSetAt(blob, keyX, keyY);
-    change2Log(_data);
     var _layout=getMixedSetDefaultLayout(fstub,trimKey(keyX), trimKey(keyY),null,null);
     var _p=mixDiv.data;
     mixDiv.data=_data;
@@ -1170,6 +1194,7 @@ jQuery(document).ready(function() {
      var url=getURL(args);
      fstub=chopForStub(url);
      blob=loadBlobFromJsonFile(url);
+     saveBlob=blob;
      dataKeys=setupUI(blob);
      slider_X_dirty=true;
      slider_Y_dirty=true;
@@ -1177,11 +1202,11 @@ jQuery(document).ready(function() {
      } else {
        var nfstub=setupDataListWithInner();
        blob=loadBlobFromInner(nfstub);
+       saveBlob=blob;
        dataKeys=setupUI(blob);
        slider_X_dirty=true;
        slider_Y_dirty=true;
   }
-  saveBlob=blob;
   saveKeyX=keyX;
   saveKeyY=keyY;
 
