@@ -114,6 +114,13 @@ function getHistogramDefaultLayout(sample,key,range){
   return p;
 }
 
+function resetHistogramThreshold(oldPlot) {
+    var oldDiv=oldPlot;
+    oldDiv.layout.shapes[0].line.width=0;
+    oldDiv.layout.shapes[1].line.width=0;
+    Plotly.redraw(oldDiv);
+}
+
 function setHistogramThreshold(oldPlot,xPos,xPos2){
     var oldDiv=oldPlot;
     if(xPos != null) {
@@ -1276,6 +1283,7 @@ function animateByTimeClick() {
           var r1=rangeOfHistogram(saveXPlot);
           gateItHistogram(saveXPlot,_x, r1[0], r1[1]);
           resetSliderRange("#channel1_slider");
+          resetHistogramThreshold(saveXPlot);
           break;
         case 'histograms': // there are two of the plots
           var r1=rangeOfHistogram(saveXPlot);
@@ -1284,6 +1292,8 @@ function animateByTimeClick() {
           gateItHistogram(saveYPlot,_y, r2[0], r2[1]);
           resetSliderRange("#channel1_slider");
           resetSliderRange("#channel2_slider");
+          resetHistogramThreshold(saveXPlot);
+          resetHistogramThreshold(saveYPlot);
           break;
         case 'mixed':
           var r=rangeOfMixed(saveMixPlot);
