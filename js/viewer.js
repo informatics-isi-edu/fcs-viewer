@@ -223,27 +223,27 @@ function split2Quadrants(x,y,xgate,ygate) {
   var Q4x=[], Q4y=[], Q4z=[];
 
   var cnt=y.length;
-  if(xgate != null && ygate != null) {
-    for(var i=0; i<cnt; i++) {
-      if(x[i]>xgate) {
-        if(y[i]>ygate) { // Q2
-          Q2x.push(x[i]); Q2y.push(y[i]); Q2z.push(i);
-          } else { // Q4
-          Q4x.push(x[i]); Q4y.push(y[i]); Q4z.push(i);
-        }
-        } else {
-          if(y[i]>ygate) { // Q1
-            Q1x.push(x[i]); Q1y.push(y[i]); Q1z.push(i);
-            } else { // Q3
-            Q3x.push(x[i]); Q3y.push(y[i]); Q3z.push(i);
-          }
-      } 
-    }
+  if(xgate==null && ygate == null) {
+    Q2x=x;
+    Q2y=y;
+    for(var i=0; i<cnt; i++) 
+       Q2z.push(i);
     } else {
-      Q2x=x;
-      Q2y=y;
-      for(var i=0; i<cnt; i++) 
-         Q2z.push(i);
+      for(var i=0; i<cnt; i++) {
+        if(x[i]>=xgate) {
+          if(y[i]>ygate || ygate==null) { // Q2
+            Q2x.push(x[i]); Q2y.push(y[i]); Q2z.push(i);
+            } else { // Q4
+            Q4x.push(x[i]); Q4y.push(y[i]); Q4z.push(i);
+          }
+          } else {
+            if(y[i]>=ygate || ygate==null) { // Q1
+              Q1x.push(x[i]); Q1y.push(y[i]); Q1z.push(i);
+              } else { // Q3
+              Q3x.push(x[i]); Q3y.push(y[i]); Q3z.push(i);
+            }
+        } 
+     }
   }
 
   var Text1=calcQuadrantStats(Q1x,cnt,'Quadrant 1');
@@ -743,8 +743,8 @@ function xRangeClick() {
 
     var m1= jQuery('#channel1_slider').slider("option", "min");
     var m2= jQuery('#channel1_slider').slider("option", "max");
-    var t1= (val[0]==m1)? null: val[0];
-    var t2= (val[1]==m2)? null: val[1];
+    var t1= (val[0]===m1)? null: val[0];
+    var t2= (val[1]===m2)? null: val[1];
     if(t1 || t2)
       setHistogramThreshold(saveXPlot, t1, t2);
   }
@@ -774,8 +774,8 @@ function yRangeClick() {
 
     var m1= jQuery('#channel2_slider').slider("option", "min");
     var m2= jQuery('#channel2_slider').slider("option", "max");
-    var t1= (val[0]==m1)? null: val[0];
-    var t2= (val[1]==m2)? null: val[1];
+    var t1= (val[0]===m1)? null: val[0];
+    var t2= (val[1]===m2)? null: val[1];
     if(t1 || t2)
       setHistogramThreshold(saveYPlot, t1, t2);
   }
