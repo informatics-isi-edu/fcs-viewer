@@ -190,9 +190,9 @@ function calcQuadrantStats(values,totalcnt,msg) {
      return ret;
   var percentTotal=Math.round((qcnt/totalcnt)*100);
   var max=Math.max.apply(Math,values);
-      max=Math.round(max * 10000)/10000;
+      max=Math.round(max * 1000)/1000;
   var min=Math.min.apply(Math,values);
-      min=Math.round(min * 10000)/10000;
+      min=Math.round(min * 1000)/1000;
       ret=ret+("max "+max+"<br>min "+min+"<br>");
   var sum=0;
   var nums=[];
@@ -238,7 +238,7 @@ function split2Quadrants(x,y,xgate,ygate) {
     } else {
       for(var i=0; i<cnt; i++) {
         if(x[i]>=xgate) {
-          if(y[i]>ygate || ygate==null) { // Q2
+          if(y[i]>=ygate || ygate==null) { // Q2
             Q2x.push(x[i]); Q2y.push(y[i]); Q2z.push(i);
             } else { // Q4
             Q4x.push(x[i]); Q4y.push(y[i]); Q4z.push(i);
@@ -533,7 +533,7 @@ function loadDataFromFile(fname) {
 
 function logValue(data) {
   var n = data.map(function (v) {  
-    return Math.log10(v)
+    return (Math.round(Math.log10(v)*100)/100);
   }); 
   return n;
 }
@@ -625,12 +625,12 @@ XXXX
 /* initial setup of the slider .. */
 function setupSliders(blob) {
   x=getOriginalChannelData(DEFAULTCHANNEL1);
-  var _max=Math.ceil(Math.max.apply(Math,x)*1000)/1000;
-  var _min=Math.floor(Math.min.apply(Math,x)*1000)/1000;
+  var _max=Math.ceil(Math.max.apply(Math,x)*100)/100;
+  var _min=Math.floor(Math.min.apply(Math,x)*100)/100;
   jQuery("#channel1_slider").slider({
     range: true,
     min: _min,
-    step: 0.001,
+    step: 0.01,
     max: _max,
     disabled: false,
     values: [_min, _max],
@@ -648,12 +648,12 @@ function setupSliders(blob) {
   $("#slider1Range").val( _min+" - "+_max);
 
   x=getOriginalChannelData(DEFAULTCHANNEL2);
-  _max=Math.ceil(Math.max.apply(Math,x)*1000)/1000;
-  _min=Math.floor(Math.min.apply(Math,x)*1000)/1000;
+  _max=Math.ceil(Math.max.apply(Math,x)*100)/100;
+  _min=Math.floor(Math.min.apply(Math,x)*100)/100;
   jQuery("#channel2_slider").slider({
     range: true,
     min: _min,
-    step: 0.001,
+    step: 0.01,
     max: _max, 
     disabled: false,
     values: [_min, _max],
@@ -696,8 +696,8 @@ function disableRangeSliders() {
 }
 
 function setSliderLimit(id,min,max) {
-  var _max=Math.ceil(max *1000)/1000;
-  var _min=Math.floor(min *1000)/1000;
+  var _max=Math.ceil(max *100)/100;
+  var _min=Math.floor(min *100)/100;
   jQuery(id).slider("option", "max", _max);
   jQuery(id).slider("option", "min", _min);
   jQuery(id).slider("option", "values", [_min,_max]);
@@ -1036,7 +1036,7 @@ function rangeItByValue(key,min,max) {
     var _new=[];
     for( i=0; i< _cnt; i++) {
       _v=_p[i];
-      if( _v >= min && _v <= max) {
+      if( _v > min && _v < max) {
          _new.push(_v);
       }
     }
