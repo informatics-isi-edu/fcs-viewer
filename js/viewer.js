@@ -1,10 +1,10 @@
 //
-//
 // Usage example:
-//http://localhost/plotly/view.html?
-//          http://localhost/data/plotly/exp_122115kv1.EP5.json
 //  http://localhost/plotly/view.html?
-//          url=http://localhost/data/plotly/exp_122115kv1.EP5.json&gateX=10&gateY=40
+//     http://localhost/data/plotly/exp_122115kv1.EP5.json
+//
+//  http://localhost/plotly/view.html?
+//     url=http://localhost/data/plotly/exp_122115kv1.EP5.json&gateX=10&gateY=40
 //
 
 
