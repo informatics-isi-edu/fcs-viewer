@@ -1,4 +1,13 @@
-// http://localhost/plotly/view.html?http://localhost/data/plotly/YLW-HLin.json
+//
+//
+// Usage example:
+//http://localhost/plotly/view.html?
+//          http://localhost/data/plotly/exp_122115kv1.EP5.json
+//  http://localhost/plotly/view.html?
+//          url=http://localhost/data/plotly/exp_122115kv1.EP5.json&gateX=10&gateY=40
+//
+
+
 
 var saveMixPlot=null;
 var saveXPlot=null;
@@ -534,9 +543,8 @@ function processArgs(args) {
              }
        }
     }
-    return url;
   }
-  return null;
+  return url;
 }
 
 function addAPlot(divname, data, layout, w, h) {
