@@ -608,11 +608,10 @@ function setupSliders(blob) {
         $("#slider1Min").val(_min);
         $("#slider1Max").val(_max);
         var t=jQuery("#channel1_slider").slider("option","range");
-        var t=jQuery("#channel1_slider").slider("option","range");
         if(t === "max") 
-          $("#slider1Range").val(ui.values[0]+" ( upto "+ui.values[1]+")");
+          $("#slider1Range").val(ui.values[0]);
           else
-            $("#slider1Range").val(ui.values[0]+" - "+ui.values[1]);
+            $("#slider2Range").val(ui.values[0]+" - "+ui.values[1]);
     },
     stop:function(event,ui) {
         xRangeClick();
@@ -639,7 +638,7 @@ function setupSliders(blob) {
         $("#slider2Max").val(_max);
         var t=jQuery("#channel2_slider").slider("option","range");
         if(t === "max")
-          $("#slider2Range").val(ui.values[0]+" ( upto "+ui.values[1]+")");
+          $("#slider2Range").val(ui.values[0]);
           else
             $("#slider2Range").val(ui.values[0]+" - "+ui.values[1]);
     },
