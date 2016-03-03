@@ -129,6 +129,8 @@ Q2_gating=x2_gate & y2_gate
 Q3_gating=x3_gate & y3_gate
 Q4_gating=x4_gate & y4_gate
 
+expr_gating=ThresholdGate(1.3,'Green Fluorescence (GRN-HLog)', region='above')
+
 gated_sample = sample.gate(Q1_gating)
 g1_data=gated_sample.data[['Green Fluorescence (GRN-HLog)']]
 gated_sample = sample.gate(Q2_gating)
@@ -138,6 +140,9 @@ g3_data=gated_sample.data[['Green Fluorescence (GRN-HLog)']]
 gated_sample = sample.gate(Q4_gating)
 g4_data=gated_sample.data[['Green Fluorescence (GRN-HLog)']]
 
+gated_sample = sample.gate(expr_gating)
+expr_data=gated_sample.data[['Green Fluorescence (GRN-HLog)']]
+
 #print "--------NEDC------------"
 stats(g1_data,f)
 #print "--------EDC------------"
@@ -146,7 +151,8 @@ stats(g2_data,f)
 stats(g3_data,f)
 #print "--------ELC------------"
 stats(g4_data,f)
-
+#print "--------EXPR------------"
+stats(expr_data,f)
 f.close()
 
 #figure();
