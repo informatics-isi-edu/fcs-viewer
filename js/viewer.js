@@ -26,13 +26,13 @@ var savePlotP=null;
 var saveSliders=[];
 
 // this is for the default initial plot display
-var initPlot_plot=DEFAULTPLOT;
-var initPlot_gateX=Math.round(Math.log10(20)*100)/100;
-var initPlot_gateY=Math.round(Math.log10(30)*100)/100;
-var initPlot_keyX=DEFAULTCHANNEL1;
-var initPlot_keyY=DEFAULTCHANNEL2;
-var initPlot_gateNames=['NEDC','EDC','NELC','ELC'];
-var initPlot_titles=['Expression','cellDeath'];
+var initPlot_plot=DEFAULT_PLOT;
+var initPlot_gateX=DEFAULT_GATEX;
+var initPlot_gateY=DEFAULT_GATEY;
+var initPlot_keyX=DEFAULT_CHANNEL1;
+var initPlot_keyY=DEFAULT_CHANNEL2;
+var initPlot_gateNames=DEFAULT_GATENAMES;
+var initPlot_titles=DEFAULT_TITLES;
 
 // should be a very small file and used for testing and so can ignore
 // >>Synchronous XMLHttpRequest on the main thread is deprecated 
@@ -592,7 +592,7 @@ XXXX
 
 /* initial setup of the slider .. */
 function setupSliders(blob) {
-  x=getOriginalChannelData(DEFAULTCHANNEL1);
+  x=getOriginalChannelData(DEFAULT_CHANNEL1);
   var _max=Math.ceil(Math.max.apply(Math,x)*100)/100;
   var _min=Math.floor(Math.min.apply(Math,x)*100)/100;
   jQuery("#channel1_slider").slider({
@@ -603,6 +603,11 @@ function setupSliders(blob) {
     disabled: false,
     values: [_min, _max],
     change: function(event,ui) {
+        var _max=jQuery("#channel1_slider").slider("option","max");
+        var _min=jQuery("#channel1_slider").slider("option","min");
+        $("#slider1Min").val(_min);
+        $("#slider1Max").val(_max);
+        var t=jQuery("#channel1_slider").slider("option","range");
         var t=jQuery("#channel1_slider").slider("option","range");
         if(t === "max") 
           $("#slider1Range").val(ui.values[0]+" ( upto "+ui.values[1]+")");
@@ -614,8 +619,10 @@ function setupSliders(blob) {
     }
   });
   $("#slider1Range").val( _min+" - "+_max);
+  $("#slider1Min").val(_min);
+  $("#slider1Max").val(_max);
 
-  x=getOriginalChannelData(DEFAULTCHANNEL2);
+  x=getOriginalChannelData(DEFAULT_CHANNEL2);
   _max=Math.ceil(Math.max.apply(Math,x)*100)/100;
   _min=Math.floor(Math.min.apply(Math,x)*100)/100;
   jQuery("#channel2_slider").slider({
@@ -626,6 +633,10 @@ function setupSliders(blob) {
     disabled: false,
     values: [_min, _max],
     change: function(event,ui) {
+        var _max=jQuery("#channel2_slider").slider("option","max");
+        var _min=jQuery("#channel2_slider").slider("option","min");
+        $("#slider2Min").val(_min);
+        $("#slider2Max").val(_max);
         var t=jQuery("#channel2_slider").slider("option","range");
         if(t === "max")
           $("#slider2Range").val(ui.values[0]+" ( upto "+ui.values[1]+")");
@@ -637,6 +648,8 @@ function setupSliders(blob) {
     }
   });
   $("#slider2Range").val( _min+" - "+_max);
+  $("#slider2Min").val(_min);
+  $("#slider2Max").val(_max);
 }
 
 function enableSlidersWithFixedMin() {
@@ -682,6 +695,7 @@ function isEmpty(obj) {
 function resetSliderMinValues(id,min) {
   var max=jQuery(id).slider("option", "max");
   jQuery(id).slider("option", "values", [min,max]);
+  jQuery(id).slider("value", jQuery(id).slider("value"));
 }
 
 function resetSliderRange(id) {
@@ -778,12 +792,12 @@ function setupDropDowns(keys) {
   for (var i = 0; i < keys.length; i++) {
     var _k=trimKey(keys[i]);
     if(_k) {
-      if(keys[i]==DEFAULTCHANNEL2) {
+      if(keys[i]==DEFAULT_CHANNEL2) {
         _ylist += '<option selected="selected" value="' + keys[i] + '">' + _k + '</option>';
         } else {
         _ylist += '<option value="' + keys[i] + '">' + _k + '</option>';
       }
-      if(keys[i]==DEFAULTCHANNEL1) {
+      if(keys[i]==DEFAULT_CHANNEL1) {
         _xlist += '<option selected="selected" value="' + keys[i] + '">' + _k + '</option>';
         } else {
         _xlist += '<option value="' + keys[i] + '">' + _k + '</option>';
@@ -792,6 +806,8 @@ function setupDropDowns(keys) {
   }
   xlist.innerHTML = _xlist;
   ylist.innerHTML = _ylist;
+  $('#x-list').val("Green Fluorescence (GRN-HLin)").trigger('change');
+  $('#y-list').val("Red Fluorescence (RED-HLin)").trigger('change');
 
   var plist = document.getElementById('plot-list');
   var _plist = '<option selected="selected" value="' + 'gtwod' + '">' + 'gated scatter' + '</option>';
@@ -800,6 +816,7 @@ function setupDropDowns(keys) {
       _plist += '<option value="' + 'twod' + '">' + '2d scatter' + '</option>';
       _plist += '<option value="' + 'ahistogram' + '">' + 'a histogram' + '</option>';
   plist.innerHTML = _plist;
+  $('#plot-list').val("gtwod").trigger('change'); 
 }
 
 function setupDataListWithInner() {
@@ -1157,14 +1174,18 @@ function updatePlot(blob,keyX,keyY,plotP) {
 /*****MAIN*****/
 jQuery(document).ready(function() {
 
+$('.plot-list-select2').select2(); 
+$('.x-list-select2').select2();
+$('.y-list-select2').select2();
+
   var blob=null;
   var dataKeys=null;
-  var fstub=DEFAULTFCS;
+  var fstub=DEFAULT_FCS;
 
   // defaults from viewer-user.js
-  saveKeyX=DEFAULTCHANNEL1;
-  saveKeyY=DEFAULTCHANNEL2;
-  savePlotP=DEFAULTPLOT;
+  saveKeyX=DEFAULT_CHANNEL1;
+  saveKeyY=DEFAULT_CHANNEL2;
+  savePlotP=DEFAULT_PLOT;
 
   var args=document.location.href.split('?');
 //http://localhost/plotly/view.html?http://localhost/data/plotly/inf_072514.EP5.json
@@ -1196,7 +1217,7 @@ jQuery(document).ready(function() {
   });
   $('#y-list').change(function() {
     var ykey = document.getElementById("y-list").value;
-    if(ykey === keyY) {
+    if(ykey === saveKeyY) {
       // no change
       } else {
       slider_Y_dirty=true;
@@ -1241,16 +1262,16 @@ function displayInitPlot(blob) {
   yRangeClick();
 }
 
-function refreshInitPlot() {
+function reset2InitPlot() {
   // also, update channel lists' select
   //       update plot list's select
   blob=saveBlob;
   saveKeyX=initPlot_keyX;
-  $('#x-list').val(saveKeyX);
+  $('#x-list').val(saveKeyX).trigger('change');;
   saveKeyY=initPlot_keyY;
-  $("#y-list").val(saveKeyY);
+  $("#y-list").val(saveKeyY).trigger('change');;
   savePlotP=initPlot_plot;
-  $('#plot-list').val(savePlotP);
+  $('#plot-list').val(savePlotP).trigger('change');;
   displayInitPlot(blob);
 }
 
