@@ -14,6 +14,7 @@ var saveXPlot=null;
 var saveYPlot=null;
 var saveScatterPlot=null;
 var saveGatedScatterPlot=null;
+var saveGatedMixedScatterPlot=null;
 var saveBlob=null;
 var inLog=true;
 
@@ -426,7 +427,6 @@ function getMixedSetAt(blob, xkey, ykey) {
 }
 
 function getMixedSetDefaultLayout(xkey,ykey,xrange,yrange,xrange2,yrange2){
-  var t= xkey+" vs "+ykey;
   var tmpx, tmpy, tmpx2, tmpy2;
   if(xrange) {
     tmpx= { "domain": [0, 0.85], "showgrid": true, "title": xkey,
@@ -439,7 +439,8 @@ function getMixedSetDefaultLayout(xkey,ykey,xrange,yrange,xrange2,yrange2){
     tmpy= { "domain": [0, 0.85], "showgrid": true, "title": ykey,
               "range": yrange,"autorange":false, "zeroline": false };
     } else {
-      tmpy= { "domain": [0, 0.85], "showgrid": true, "title": ykey, "zeroline": false };
+      tmpy= { "domain": [0, 0.85], "showgrid": true, "title": ykey,
+               "zeroline": false };
   }
   if(xrange2) {
     tmpx2 = { "domain": [0.85, 1], "showgrid": false,
@@ -457,14 +458,158 @@ function getMixedSetDefaultLayout(xkey,ykey,xrange,yrange,xrange2,yrange2){
   var p= {
       "width": 600,
       "height": 600,
-      "title": t,
       "plot_bgcolor": 'rgb(223, 223, 223)',
-
       "showlegend": false,
       "autosize": false,
       "margin": {"t": 100},
       "hovermode": "closest",
-      "bargap": 0,
+      "bargap": 0.2,
+      "xaxis": tmpx,
+      "yaxis": tmpy,
+      "xaxis2": tmpx2,
+      "yaxis2": tmpy2
+  };   
+  return p;
+}
+
+function getGatedMixedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
+  /* separate into 4 sets of traces */
+  var x=getOriginalChannelData(xkey);
+  var y=getOriginalChannelData(ykey);
+
+  var Q=split2Quadrants(x,y,xgate,ygate);
+  var Q1x=Q[0][0], Q1y=Q[0][1], Text1=Q[0][3];
+  var Q2x=Q[1][0], Q2y=Q[1][1], Text2=Q[1][3];
+  var Q3x=Q[2][0], Q3y=Q[2][1], Text3=Q[2][3];
+  var Q4x=Q[3][0], Q4y=Q[3][1], Text4=Q[3][3];
+
+/* special case.. if xkey==green and ykey==red, then use namegate.. */
+  var _name= (xkey === 'Green Fluorescence (GRN-HLin)'
+                      && ykey === 'Red Fluorescence (RED-HLin)')? 
+                                initPlot_gateNames:['Q1','Q2','Q3','Q4'];
+
+  /* separate into 4 sets of traces */
+  var data= [ 
+             {
+                "name": _name[0],
+                "x": Q1x,
+                "y": Q1y,
+                "ax": 0,
+                "ay" : -40,
+                "text" : Text1,
+                "showlegend": true,
+                "mode": "markers",
+                "marker": {
+                    "color": 'rgb(0, 197, 208)',
+                    "size": 10,
+                    "line": {"color": "black", "width": 1},
+                    "opacity": 0.6
+                  },
+                "type":"scatter" 
+             },
+             {
+                "name": _name[1],
+                "x": Q2x,
+                "y": Q2y,
+                "showlegend": true,
+                "text" : Text2,
+                "mode": "markers",
+                "marker": {
+                    "color": 'rgb(255, 48, 48)',
+                    "size": 10,
+                    "line": {"color": "black", "width": 1},
+                    "opacity": 0.6
+                  },
+                "type":"scatter" 
+             },
+             {
+                "name": _name[2],
+                "x": Q3x,
+                "y": Q3y,
+                "showlegend": true,
+                "text" : Text3,
+                "mode": "markers",
+                "marker": {
+                    "color": "orange",
+                    "size": 10,
+                    "line": {"color": "black", "width": 1},
+                    "opacity": 0.6
+                  },
+                "type":"scatter" 
+             },
+             {
+                "name": _name[3],
+                "x": Q4x,
+                "y": Q4y,
+                "showlegend": true,
+                "text" : Text4,
+                "mode": "markers",
+                "marker": {
+                    "color": "green",
+                    "size": 10,
+                    "line": {"color": "black", "width": 1},
+                    "opacity": 0.6
+                  },
+                "type":"scatter" 
+             },
+             {  "x": x,
+                "showlegend": false,
+                "name": "x count",
+                "marker": { "color": "blue"},
+                "yaxis": "y2",
+                "type": "histogram" },
+             {  "y": y,
+                "showlegend": false,
+                "name": "y count",
+                "marker": { "color": "red"},
+                "xaxis": "x2",
+                "type": "histogram" }
+          ];
+  return data;
+}
+
+function getGatedMixedScatterSetDefaultLayout(xkey,ykey,xrange,yrange,xrange2,yrange2){
+  var tmpx, tmpy, tmpx2, tmpy2;
+
+  var _title=(xkey === 'Green Fluorescence'
+                      && ykey === 'Red Fluorescence')?
+                         initPlot_titles: [xkey+"(log)",ykey+"(log)"];
+
+  if(xrange) {
+    tmpx= { "domain": [0, 0.85], "showgrid": true, "title": _title[0],
+              "range": xrange, "autorange":false, "zeroline": true };
+    } else { 
+      tmpx= { "domain": [0, 0.85], "showgrid": true, "title": _title[0], 
+              "zeroline": true};
+  }
+  if(yrange) {
+    tmpy= { "domain": [0, 0.85], "showgrid": true, "title": _title[1],
+              "range": yrange,"autorange":false, "zeroline": true };
+    } else {
+      tmpy= { "domain": [0, 0.85], "showgrid": true, "title": _title[1], 
+              "zeroline": true };
+  }
+  if(xrange2) {
+    tmpx2 = { "domain": [0.85, 1], "showgrid": false,
+              "range": xrange2, "autorange":false, "zeroline": true };
+    } else {
+      tmpx2 = { "domain": [0.85, 1], "showgrid": false, "zeroline": true };
+  }
+
+  if(yrange2) {
+    tmpy2= { "domain": [0.85, 1], "showgrid": false,
+              "range": yrange2, "autorange":false, "zeroline": true };
+    } else {
+      tmpy2= { "domain": [0.85, 1], "showgrid": false, "zeroline": true };
+  }
+  var p= {
+      "width": 600,
+      "height": 600,
+      "plot_bgcolor": 'rgb(223, 223, 223)',
+      "autosize": false,
+      "margin": {"t": 100},
+      "hovermode": "closest",
+      "bargap": 0.2,
       "xaxis": tmpx,
       "yaxis": tmpy,
       "xaxis2": tmpx2,
@@ -725,7 +870,8 @@ function stashSliderLimit(id,min,max) {
 
 // process x axis's gating
 function xRangeClick() {
-  if(savePlotP !== "histograms" && savePlotP !== "ahistogram" && savePlotP !== "gtwod") {
+  if(savePlotP !== "histograms" && savePlotP !== "ahistogram" 
+            && savePlotP !== "gtwod" && savePlotP !== "gmtwod") {
     window.console.log("WARNING, can only gate histograms..");
     resetSliderRange("#channel1_slider");
     return;
@@ -753,10 +899,20 @@ function xRangeClick() {
     var _y=getOriginalChannelData(saveKeyY);
     gateItGatedScatter(saveGatedScatterPlot,_x,_y,null,null,gateX,gateY);
   }
+  if(saveGatedMixedScatterPlot) {
+    var val = jQuery('#channel1_slider').slider("option", "values");
+    var gateX=val[0];
+    val = jQuery('#channel2_slider').slider("option", "values");
+    var gateY=val[0];
+    var _x=getOriginalChannelData(saveKeyX);
+    var _y=getOriginalChannelData(saveKeyY);
+    gateItGatedMixedScatter(saveGatedMixedScatterPlot,_x,_y,null,null,gateX,gateY);
+  }
 }
 
 function yRangeClick() {
-  if(savePlotP !== "histograms" && savePlotP !== "gtwod") {
+  if(savePlotP !== "histograms" && savePlotP !== "gtwod" &&
+                  savePlotP !== "gmtwod") {
     window.console.log("WARNING, can only gate histograms..");
     resetSliderRange("#channel2_slider");
     return;
@@ -783,6 +939,15 @@ function yRangeClick() {
     var _x=getOriginalChannelData(saveKeyX);
     var _y=getOriginalChannelData(saveKeyY);
     gateItGatedScatter(saveGatedScatterPlot,_x,_y,null,null,gateX,gateY);
+  }
+  if(saveGatedMixedScatterPlot) {
+    var val = jQuery('#channel1_slider').slider("option", "values");
+    var gateX=val[0];
+    val = jQuery('#channel2_slider').slider("option", "values");
+    var gateY=val[0];
+    var _x=getOriginalChannelData(saveKeyX);
+    var _y=getOriginalChannelData(saveKeyY);
+    gateItGatedMixedScatter(saveGatedMixedScatterPlot,_x,_y,null,null,gateX,gateY);
   }
 }
 
@@ -812,13 +977,14 @@ function setupDropDowns(keys) {
   $('#y-list').val("Red Fluorescence (RED-HLin)").trigger('change');
 
   var plist = document.getElementById('plot-list');
-  var _plist = '<option selected="selected" value="' + 'gtwod' + '">' + 'gated scatter' + '</option>';
-      _plist += '<option value="' + 'mixed' + '">' + 'mixed plots' + '</option>';
+  var _plist = '<option selected="selected" value="' + 'gmtwod' + '">' + 'gated mixed scatter' + '</option>';
       _plist += '<option value="' + 'histograms' + '">' + 'histograms' + '</option>';
-      _plist += '<option value="' + 'twod' + '">' + '2d scatter' + '</option>';
       _plist += '<option value="' + 'ahistogram' + '">' + 'a histogram' + '</option>';
+      _plist += '<option value="' + 'mixed' + '">' + 'mixed plots' + '</option>';
+      _plist += '<option value="' + 'twod' + '">' + '2d scatter' + '</option>';
+//      _plist += '<option value="' + 'gtwod' + '">' + 'gated scatter' + '</option>';
   plist.innerHTML = _plist;
-  $('#plot-list').val("gtwod").trigger('change'); 
+  $('#plot-list').val("gmtwod").trigger('change'); 
 }
 
 function setupDataListWithInner() {
@@ -996,6 +1162,39 @@ function gateItGatedScatter(oldPlot,new_x,new_y,xrange,yrange,gateX,gateY) {
     Plotly.redraw(oldDiv);
 }
 
+function gateItGatedMixedScatter(oldPlot,new_x,new_y,xrange,yrange,gateX,gateY) {
+    var oldDiv=oldPlot;
+    var new_data=split2Quadrants(new_x,new_y,gateX,gateY);
+
+    oldDiv.data[0].x=new_data[0][0];
+    oldDiv.data[0].y=new_data[0][1];
+    oldDiv.data[0].text=new_data[0][3];
+  
+
+    oldDiv.data[1].x=new_data[1][0];
+    oldDiv.data[1].y=new_data[1][1];
+    oldDiv.data[1].text=new_data[1][3];
+
+    oldDiv.data[2].x=new_data[2][0];
+    oldDiv.data[2].y=new_data[2][1];
+    oldDiv.data[2].text=new_data[2][3];
+
+    oldDiv.data[3].x=new_data[3][0];
+    oldDiv.data[3].y=new_data[3][1];
+    oldDiv.data[3].text=new_data[3][3];
+
+    if(xrange) {
+      oldDiv.layout.xaxis.range=xrange;
+      oldDiv.layout.xaxis.autorange=false;
+    }
+    if(yrange) {
+      oldDiv.layout.yaxis.range=yrange;
+      oldDiv.layout.yaxis.autorange=false;
+    }
+
+    Plotly.redraw(oldDiv);
+}
+
 
 function gateItMixed(oldPlot,new_x,new_y,xrange,yrange,xrange2,yrange2) {
     var oldDiv=oldPlot;
@@ -1118,18 +1317,31 @@ function addMixed(blob, keyX, keyY) {
   saveMixPlot=addAPlot('#myViewer',_data, _layout, 600, 600);
 }
 
-function updateMixed(blob, keyX, keyY) {
-    var mixDiv=saveMixPlot;
-    var _data=getMixedSetAt(blob, keyX, keyY);
-    var _layout=getMixedSetDefaultLayout(trimKey(keyX), trimKey(keyY),null,null);
-    var _p=mixDiv.data;
-    mixDiv.data=_data;
-    var _t=_layout['title']; 
-    mixDiv.layout.title=_t;
-    mixDiv.layout.xaxis.title=trimKey(keyX);
-    mixDiv.layout.yaxis.title=trimKey(keyY);
-    Plotly.redraw(mixDiv);
+// mixed scatter with gating
+function addGMTwoD(blob,keyX,keyY,gateX,gateY) {
+
+  var _data=getGatedMixedScatterSetAt(blob, keyX, keyY,gateX,gateY);
+  {
+    var tmp0=_data[0]['x'];
+    var tmp=tmp0.concat(_data[1]['x'],_data[2]['x'],_data[3]['x']);
+    var _max=Math.max.apply(Math,tmp);
+    var _min=Math.min.apply(Math,tmp);
+    slider_X_dirty=true;
+    stashSliderLimit("#channel1_slider", _min, _max);
+  }
+  {
+    var tmp0=_data[0]['y'];
+    var tmp=tmp0.concat(_data[1]['y'],_data[2]['y'],_data[3]['y']);
+    var _max=Math.max.apply(Math,tmp);
+    var _min=Math.min.apply(Math,tmp);
+    slider_Y_dirty=true;
+    stashSliderLimit("#channel2_slider", _min, _max);
+  }
+
+  var _layout=getGatedMixedScatterSetDefaultLayout(trimKey(keyX),trimKey(keyY),null,null);
+  saveGatedMixedScatterPlot=addAPlot('#myViewer',_data, _layout, 600,600);
 }
+
 
 function updatePlot(blob,keyX,keyY,plotP) {
   $('#myViewer').empty();
@@ -1142,6 +1354,7 @@ function updatePlot(blob,keyX,keyY,plotP) {
   saveYPlot=null;
   saveScatterPlot=null;
   saveGatedScatterPlot=null;
+  saveGatedMixedScatterPlot=null;
   saveBlob=blob;
   savePlotP=plotP;
   saveKeyY=keyY;
@@ -1158,6 +1371,10 @@ function updatePlot(blob,keyX,keyY,plotP) {
     case 'gtwod' :
       enableSlidersWithFixedMin();
       addGTwoD(blob, keyX, keyY);
+      break;
+    case 'gmtwod' :
+      enableSlidersWithFixedMin();
+      addGMTwoD(blob, keyX, keyY);
       break;
     case 'histograms':
       enableRangeSliders();
@@ -1333,6 +1550,14 @@ function animateByTimeClick() {
           val = jQuery('#channel2_slider').slider("option", "values");
           var gateY=val[0];
           gateItGatedScatter(saveGatedScatterPlot,_x,_y,r[0],r[1],gateX,gateY);
+          break;
+        case 'gmtwod':
+          var r=rangeOfScatter(saveGatedMixedScatterPlot);
+          var val = jQuery('#channel1_slider').slider("option", "values");
+          var gateX=val[0];
+          val = jQuery('#channel2_slider').slider("option", "values");
+          var gateY=val[0];
+          gateItMixedGatedScatter(saveGatedMixedScatterPlot,_x,_y,r[0],r[1],gateX,gateY);
           break;
     }
        if (_maxIdx > max)

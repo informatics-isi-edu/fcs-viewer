@@ -16,7 +16,7 @@ var SKIPKEYS= { "Time": "Time" };
 
 var DEFAULT_CHANNEL1='Green Fluorescence (GRN-HLin)';
 var DEFAULT_CHANNEL2='Red Fluorescence (RED-HLin)';
-var DEFAULT_PLOT='gtwod';
+var DEFAULT_PLOT='gmtwod';
 var DEFAULT_FCS='inf_072514.EP5';
 var DEFAULT_GATEX=Math.round(Math.log10(20)*100)/100;
 var DEFAULT_GATEY=Math.round(Math.log10(30)*100)/100;
