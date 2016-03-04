@@ -1480,6 +1480,7 @@ $('.y-list-select2').select2();
 function displayInitPlot(blob) {
   slider_X_dirty=true;
   slider_Y_dirty=true;
+  $('#plot-list').val(savePlotP).trigger('change');;
   updatePlot(blob,saveKeyX,saveKeyY,savePlotP);
   resetSliderMinValues("#channel1_slider",initPlot_gateX);
   resetSliderMinValues("#channel2_slider",initPlot_gateY);
