@@ -13,7 +13,7 @@ import json
 import math
 
 import matplotlib
-#matplotlib.use("Pdf")
+matplotlib.use("Pdf")
 
 from FlowCytometryTools import *
 from pylab import *
