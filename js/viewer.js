@@ -72,7 +72,9 @@ function loadBlobFromJsonFile(fname) {
 function getHistogramAt(blob, key, color) {
   var x=getOriginalChannelData(key);
   var data= [ { "x": x, 
-                "marker": { "color":color },
+                "marker": {
+                  "color":color,
+                },
                 "type" :"histogram" } ];
   return data;
 }
@@ -100,6 +102,7 @@ function getHistogramDefaultLayout(key,range){
   var p= {
         "width": 600,
         "height": _height,
+        "bargap": 0.2,
         "xaxis": tmp,
         "yaxis": { "title":"Count"} ,
 /* add vertical gating line */
@@ -146,7 +149,7 @@ function setHistogramThreshold(oldPlot,xPos,xPos2){
       if(savePlotP === 'ahistogram') {
         oldDiv.layout.shapes[0].line.width=6;
         } else {
-         oldDiv.layout.shapes[0].line.width=3;
+         oldDiv.layout.shapes[0].line.width=4;
       }
     }
     if(xPos2 != null) {
@@ -155,7 +158,7 @@ function setHistogramThreshold(oldPlot,xPos,xPos2){
       if(savePlotP === 'ahistogram') {
         oldDiv.layout.shapes[1].line.width=6;
         } else {
-         oldDiv.layout.shapes[1].line.width=3;
+         oldDiv.layout.shapes[1].line.width=4;
       }
     }
     Plotly.redraw(oldDiv);
@@ -486,7 +489,7 @@ function loadDataFromFile(fname) {
 
 function logValue(data) {
   var n = data.map(function (v) {  
-    return (Math.round(Math.log10(v)*100)/100);
+    return (Math.round(Math.log10(v)*10000)/10000);
   }); 
   return n;
 }
@@ -611,7 +614,7 @@ function setupSliders(blob) {
         if(t === "max") 
           $("#slider1Range").val(ui.values[0]);
           else
-            $("#slider2Range").val(ui.values[0]+" - "+ui.values[1]);
+            $("#slider1Range").val(ui.values[0]+" - "+ui.values[1]);
     },
     stop:function(event,ui) {
         xRangeClick();
@@ -919,10 +922,16 @@ function rangeOfScatter(oldPlot) {
 }
 
 // log value of original data
+// keep a cache
+var channelCache=[];
 function getOriginalChannelData(key) {
+  if (key in channelCache ) {
+    return channelCache[key];
+  } 
   var s=saveBlob[key];
   var x= Object.keys(s).map(function(k) { return parseFloat(s[k]) });
   x=logValue(x);
+  channelCache[key]=x;
   return x;
 }
 
