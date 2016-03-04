@@ -365,13 +365,13 @@ function getGatedScatterSetDefaultLayout(xkey,ykey,xrange,yrange){
   var tmpx, tmpy;
   var _title=(xkey === 'Green Fluorescence'
                       && ykey === 'Red Fluorescence')? 
-                         initPlot_titles: [xkey,ykey];
+                         initPlot_titles: [xkey+"(log)",ykey+"(log)"];
   if(xrange && yrange) {
-    tmpx= { "title":_title[0]+"(log)", "range": xrange };
-    tmpy= { "title":_title[1]+"(log)", "range": yrange };
+    tmpx= { "title":_title[0], "range": xrange };
+    tmpy= { "title":_title[1], "range": yrange };
     } else {
-      tmpx= { "title":_title[0]+"(log)"};
-      tmpy= { "title":_title[1]+"(log)"};
+      tmpx= { "title":_title[0]};
+      tmpy= { "title":_title[1]};
   }
   var p= {
       "width": 600,
