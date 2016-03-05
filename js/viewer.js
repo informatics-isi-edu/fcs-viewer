@@ -1472,7 +1472,9 @@ $('.y-list-select2').select2();
 
 // initial plot
   if(!enableEmbedded) {
-    displayInitPlot(blob);
+//    displayInitPlot(blob);
+    savePlotP=blob;
+    reset2InitPlot(); 
   }
 })
 
