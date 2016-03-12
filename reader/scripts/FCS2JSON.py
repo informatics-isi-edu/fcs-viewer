@@ -1,9 +1,12 @@
 #!/usr/bin/env python
-# usage: ./FCS2JSON.py dir/exp_010214m.EP5.FCS
-##        will produce dir/exp_010214m.EP5.json
+##
+##
+## usage: ./FCS2JSON.py dir/exp_010214m.EP5.FCS
+##         will produce dir/exp_010214m.EP5.json
+##         will produce dir/exp_010214m.EP5.csv
 ##
 ## usage: ./FCS2JSON.py dir/exp_010214m.EP5.FCS outdir
-##        will produce  outdir/exp_010214m.EP5.json
+##         will produce  outdir/exp_010214m.EP5.json
 ##
 
 import os
@@ -91,6 +94,7 @@ target=os.path.join(outdir,resultID)
 #f.write(csv)
 #f.close()
 
+################### write json channel file ###################
 
 f = open(target+".json", 'w')
 json_str =subset.to_json()

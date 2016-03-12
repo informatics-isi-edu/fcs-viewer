@@ -4,11 +4,9 @@
 // being used inside another window (i.e. Chaise), set enableEmbedded.
 
 var enableEmbedded = false;
-/* XXXX short circuit it for now..
 if (window.self !== window.top) {
     enableEmbedded = true;
 }
-*/
 
 //[ "Forward Scatter (FSC-HLin)", "Side Scatter (SSC-HLin)",
 //  "Green Fluorescence (GRN-HLin)", "Yellow Fluorescence (YLW-HLin)",
@@ -20,7 +18,8 @@ function getKeys(blob) {
 
 function setupUI(blob) {
   var dataKeys=getKeys(blob);
-  if(!enableEmbedded) {
+//XXX  if(!enableEmbedded) {
+  if(true) {
     /* enable control and annotations buttons */
     var bElm = document.getElementById('controlBlock');
     if(bElm)
@@ -38,9 +37,7 @@ function setupUI(blob) {
 // post outgoing message events to Chaise,
 /*********************************************************/
 function postChannelList(mType, cList) {
-  if (enableEmbedded) {
-    window.top.postMessage({messageType: mType, content: cList}, window.location.origin);
-  }
+  window.top.postMessage({messageType: mType, content: cList}, window.location.origin);
 }
 
 /*********************************************************/
@@ -51,16 +48,15 @@ window.addEventListener('message', function(event) {
         var messageType = event.data.messageType;
         var data = event.data.content;
         switch (messageType) {
-            case 'downloadView':
-                jpgClick(data.outfile);
-                break;
             case 'fcsBlob':
                 var blob=data.blob;
+                break;
+            case 'openViewer':
+                reset2InitPlot();
                 break;
 /*
 XXXX
 */
-
             default:
                 console.log('Invalid message type. No action performed. Received message event: ', event);
         }

@@ -1471,9 +1471,12 @@ $('.y-list-select2').select2();
   });
 
 // initial plot
-  if(!enableEmbedded) {
-//    displayInitPlot(blob);
-    savePlotP=blob;
+/*XXX
+   if(!enableEmbedded) {
+     displayInitPlot(blob);
+   }
+*/
+  if(true) {
     reset2InitPlot(); 
   }
 })
@@ -1490,6 +1493,7 @@ function displayInitPlot(blob) {
   yRangeClick();
 }
 
+// initial plot to display
 function reset2InitPlot() {
   // also, update channel lists' select
   //       update plot list's select
