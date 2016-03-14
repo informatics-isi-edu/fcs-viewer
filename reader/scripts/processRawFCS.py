@@ -7,9 +7,10 @@
 ##
 ## usage: ./processRawFCS.py dir/exp_010214m.EP5.FCS outdir [ oneUp ]
 ##
-##     will produce outdir/exp_010214m.EP5.FCS_isrd_sampleID.FCS
-##     will produce outdir/exp_010214m.EP5.FCS_isrd_sampleID.json
-##     will produce outdir/exp_010214m.EP5.FCS_isrd_sampleID.csv
+##     will produce outdir/exp_010214m.EP5.FCS_sampleID.FCS
+##     will produce outdir/exp_010214m.EP5.FCS_sampleID.json
+##     will produce outdir/exp_010214m.EP5.FCS_sampleID.csv
+##     will produce outdir/exp_010214m.EP5.FCS_sampleID_m.csv
 ##
 
 import os
@@ -25,6 +26,8 @@ from FlowCytometryTools import *
 from pylab import *
 
 import fcsparser
+
+delimiter="/"
 
 ###########################################################
 if(len(sys.argv) < 3) : 
@@ -55,6 +58,7 @@ def processOne(target):
     subset, sample=getSampleSubset(resultID, target)
     genJsonFile(target, subset)
     genCSVStatisticsFile(target, sample)
+    genCSVMetadataFile(target,sample)
 
 ###########################################################
 
@@ -157,6 +161,24 @@ def genCSVStatisticsFile(target, sample):
 #"--------EXPR------------"
     ss=getStats(expr_data)
     f.write(ss)
+    f.write("\n")
+    f.close()
+
+################### write csv metadata file ###################
+def genCSVMetadataFile(target, sample):
+    f = open(target+"_m.csv", 'w')
+    meta=sample.meta
+## remove __original__ and __header__
+    del meta['__header__']
+    del meta['__original__']
+    k=sample.meta.keys()
+    kk=delimiter.join(k)
+    f.write(kk)
+    f.write("\n")
+    v=sample.meta.values()
+## This is the 'internally edited' meta value set and so some are integers
+    vv=delimiter.join(str(x) for x in v)
+    f.write(vv)
     f.write("\n")
     f.close()
 
