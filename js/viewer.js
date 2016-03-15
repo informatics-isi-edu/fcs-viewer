@@ -1511,12 +1511,6 @@ function reset2InitPlot() {
 function animateByTimeClick() { 
   var max=2000;
   var step=100;
-} 
-
-// FUN-O
-function animateByTimeClick() { 
-  var max=2000;
-  var step=100;
   var i=1;
 
   var i_id=setInterval(function() {
