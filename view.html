@@ -22,69 +22,56 @@
 <link href="css/bootstrap-theme.min.css" rel="stylesheet">
 <script type='text/javascript' src='js/bootstrap.min.js'></script>
 
+<link href="css/viewer.css" rel="stylesheet">
 <script type='text/javascript' src='js/viewer-data.js'></script>
 <script type='text/javascript' src='js/viewer-user.js'></script>
 <script type='text/javascript' src='js/viewer-ui.js'></script>
 <script type='text/javascript' src='js/viewer.js'></script>
 <script type='text/javascript' src='js/plotly.min.js'></script>
-<style>
-#channel1_slider .ui-slider-range {
- background: blue;
-}
-#channel2_slider .ui-slider-range {
- background: red;
-}
 
-.ui-slider-horizontal .ui-state-default {
- background: grey;
-}
-
-</style>
 </head>
 <body>
-<div id='viewerBlock' style='width:700px;'>
+<div id='viewerBlock' class="viewer-block">
    <div id='myViewer'></div>
 </div>
-<div id='controlBlock' style='margin-left:20px;width:600px;display:none; height:150px;'>
-   <div style='float:left;margin:5px; width:80%;'>
-     Select a plot
-     <select required id="plot-list" class="plot-list-select2" style="width:33%"></select>
-     <div id='demoData' style='display:none;float:right'>
-     Select a data
-     <select required id="data-list" class="data-list-select2" ></select>
+<div id='controlBlock' class="control-block" style="display:none;">
+   <div class="control-line row">
+     <div class="col-md-6 col-xs-6">
+       <label for="plot-list">Select a plot</label>
+       <select required id="plot-list" class="select-input plot-list-select2"></select>
+     </div>
+     <div id='demoData' style='display:none;' class="col-md-6 col-xs-6 no-padding">
+       <label class="small-label" for="data-list">Select a data</label>
+       <select required id="data-list" class="select-input data-list-select2"></select>
      </div>
    </div>
-   <br>
-   <div id='channel1' style='float:left;margin:5px; width:80%;'>
-     <div style='width:65%;float:left;margin-top:5px;'>
-     Select 1st channel
-     <select required id="x-list" class="x-list-select2" style='width:60%;'></select>
+   <div class="control-line row" id='channel1'>
+     <div class="col-md-6 col-xs-6">
+       <label for="x-list">Select 1st channel</label>
+       <select required id="x-list" class="select-input x-list-select2"></select>
      </div>
-     <div id="x_range_slider" style='float:right;width:35%;'>
-     <input id="slider1Min" style="border:none;width:30px;font-size:12px;font-weight: bold;color:black;">
-     <input id="slider1Range" style="border:none;margin-left:20px;width:60px;font-weight:bold;font-size:12px;color:red;">
-     <input id="slider1Max" style="border:none;float:right;width:30px;font-size:12px;font-weight:bold;color:black;">
-     <div id='channel1_slider' style='border:solid 2px grey; float:right;width:160px'> </div>
-     </div>
-   </div>
-   <div id='channel2' style='display:;float:left;margin:5px; width:80%;'>
-     <div style='width:65%;float:left;margin-top:5px;'>
-     Select 2nd channel
-     <select required id="y-list" class="y-list-select2" style='width:58%'></select>
-     </div>
-     <div id="y_range_slider" style='float:right;width:35%;'>
-     <input id="slider2Min" style="border:none;width:30px;font-size:12px;font-weight: bold;color:black;">
-     <input id="slider2Range" style="border:none;margin-left:20px;width:60px;font-size:12px;font-weight:bold;color:red;">
-     <input id="slider2Max" style="border:none;float:right;width:30px;font-size:12px;font-weight:bold;color:black;">
-     <div id='channel2_slider' style='border:solid 2px grey;float:right;width:160px;'> </div>
+     <div id="x_range_slider" class="col-md-6 col-xs-6 no-padding">
+       <div id="slider1Min" class="slider-min"></div>
+       <div id="slider1Range" class="slider-value"></div>
+       <div id="slider1Max" class="slider-max"></div>
+       <div id='channel1_slider'></div>
      </div>
    </div>
-   <br>
-   <div style="float:left;width:80%;">
-     <button id="time-control-button" style="float:left;border:solid 2px grey;margin-right:20px;" onclick="reset2InitPlot()"><a>reset</a></button>
+   <div class="control-line row" id='channel2'>
+     <div class="col-md-6 col-xs-6">
+       <label for="y-list">Select 2nd channel</label>
+       <select required id="y-list" class="select-input y-list-select2"></select>
+     </div>
+     <div id="y_range_slider" class="col-md-6 col-xs-6 no-padding">
+       <div id="slider2Min" class="slider-min"></div>
+       <div id="slider2Range" class="slider-value"></div>
+       <div id="slider2Max" class="slider-max"></div>
+       <div id='channel2_slider'></div>
+     </div>
    </div>
-   <div style="float:left;width:80%;display:none">
-     <button id="time-control-button" style="float:left;border:solid 2px grey;margin-right:20px;" onclick="animateByTimeClick()"><a>animateByTime</a></button>
+   <div class="control-line control-buttons">
+       <button id="time-control-button" type="button" class="btn btn-danger" onclick="reset2InitPlot()">Reset</button>
+       <button style="display:none;" id="time-control-button" type="button" class="btn btn-primary" onclick="animateByTimeClick()">Animate By Time</button>
    </div>
 </div>
 </body>
