@@ -15,9 +15,9 @@
 
 import os
 import sys
-#import pdb
 import json
 import math
+import csv
 
 import matplotlib
 matplotlib.use("Pdf")
@@ -26,8 +26,6 @@ from FlowCytometryTools import *
 from pylab import *
 
 import fcsparser
-
-delimiter="/"
 
 ###########################################################
 if(len(sys.argv) < 3) : 
@@ -73,8 +71,7 @@ def getStats(qq_data):
     min=round(qq_data.min()[0],3)
     count=qq_data.count()[0]
     t=[str(percentTotal),str(mean),str(median),str(max),str(min),str(count)]
-    tt=",".join(t)
-    return tt
+    return t
 
 def makeChannelList(channel_names):
     alist=[]
@@ -105,9 +102,9 @@ def genJsonFile(target, subset):
 ################### write csv statistics file ###################
 def genCSVStatisticsFile(target, sample):
     f = open(target+".csv", 'w')
-    t="percentTotal,mean,median,max,min,count"
-    f.write(t)
-    f.write("\n")
+    writer = csv.writer(f)
+    t= ["percentTotal","mean","median","max","min","count"]
+    writer.writerow(t)
 
 ## gating
     x1_gate = ThresholdGate(1.3,'Green Fluorescence (GRN-HLog)', region='below')
@@ -144,24 +141,19 @@ def genCSVStatisticsFile(target, sample):
 
 #"--------NEDC------------"
     ss=getStats(g1_data)
-    f.write(ss)
-    f.write("\n")
+    writer.writerow(ss)
 #"--------EDC------------"
     ss=getStats(g2_data)
-    f.write(ss)
-    f.write("\n")
+    writer.writerow(ss)
 #"--------NELC------------"
     ss=getStats(g3_data)
-    f.write(ss)
-    f.write("\n")
+    writer.writerow(ss)
 #"--------ELC------------"
     ss=getStats(g4_data)
-    f.write(ss)
-    f.write("\n")
+    writer.writerow(ss)
 #"--------EXPR------------"
     ss=getStats(expr_data)
-    f.write(ss)
-    f.write("\n")
+    writer.writerow(ss)
     f.close()
 
 ################### write csv metadata file ###################
@@ -172,14 +164,9 @@ def genCSVMetadataFile(target, sample):
     del meta['__header__']
     del meta['__original__']
     k=sample.meta.keys()
-    kk=delimiter.join(k)
-    f.write(kk)
-    f.write("\n")
-    v=sample.meta.values()
-## This is the 'internally edited' meta value set and so some are integers
-    vv=delimiter.join(str(x) for x in v)
-    f.write(vv)
-    f.write("\n")
+    writer = csv.DictWriter(f,k)
+    writer.writeheader()
+    writer.writerow(sample.meta)
     f.close()
 
 ####################MAIN###################################
