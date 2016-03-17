@@ -98,3 +98,5 @@ input.select2-search__field{
   background: -moz-linear-gradient(center bottom, #fff 85%, #eee 99%);
   background: linear-gradient(top, #fff 85%, #eee 99%);
 }
+
+span.select2.select2-container{width: auto!important;} /* Firefox bug */
