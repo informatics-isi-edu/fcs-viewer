@@ -1,5 +1,6 @@
 
 rm -rf oneOnly multiOnly
 
-python /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin/processRawFCS.py 'usc4/exp_021916kv.EP5.FCS' oneOnly True
-python /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin/processRawFCS.py 'usc4/exp_021916kv.EP5.FCS' multiOnly
+python /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin/processRawFCS.py 'usc5/exp_010214m.EP5.FCS_s4226_13481_2.FCS' oneOnly True
+#python /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin/processRawFCS.py 'usc4/exp_021916kv.EP5.FCS' oneOnly True
+#python /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin/processRawFCS.py 'usc4/exp_021916kv.EP5.FCS' multiOnly

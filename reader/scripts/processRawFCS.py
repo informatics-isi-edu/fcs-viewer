@@ -61,6 +61,8 @@ def processOne(target):
 ###########################################################
 
 def getStats(qq_data):
+    if (qq_data.empty): 
+      return [ "NaN", "NaN", "NaN", "NaN", "NaN", "NaN" ];
     p=qq_data.mean()[0]
     mean=int(pow(10,p))
     p=qq_data.median()[0]
