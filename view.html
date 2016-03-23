@@ -40,9 +40,16 @@
        <label for="plot-list">Select a plot</label>
        <select required id="plot-list" class="select-input plot-list-select2"></select>
      </div>
-     <div id='demoData' style='display:none;' class="col-md-6 col-xs-6 no-padding">
-       <label class="small-label" for="data-list">Select a data</label>
-       <select required id="data-list" class="select-input data-list-select2"></select>
+     <div class="col-md-6 col-xs-6 no-padding">
+       <div class="col-md-10 col-xs-10">
+         <div id="demoData" style="display:none">
+           <label class="small-label" for="data-list">Select a data</label>
+           <select required id="data-list" class="select-input data-list-select2"></select>
+         </div>
+       </div>
+       <div class="col-md-1 col-xs-1">
+           <button id="time-control-button" type="button" class="btn btn-danger" onclick="reset2InitPlot()">Reset</button>
+       </div>
      </div>
    </div>
    <div class="control-line row" id='channel1'>
@@ -70,8 +77,7 @@
      </div>
    </div>
    <div class="control-line control-buttons">
-       <button id="time-control-button" type="button" class="btn btn-danger" onclick="reset2InitPlot()">Reset</button>
-       <button style="display:none;" id="time-control-button" type="button" class="btn btn-primary" onclick="animateByTimeClick()">Animate By Time</button>
+      <button style="display:none;" id="time-control-button" type="button" class="btn btn-primary" onclick="animateByTimeClick()">Animate By Time</button>
    </div>
 </div>
 </body>

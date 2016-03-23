@@ -71,10 +71,10 @@ div.control-line{
 }
 
 div.control-line label{font-weight: normal;width:125px;}
-div.control-line label.small-label{width:100px;}
+div.control-line label.small-label{width:85px;}
 
 span.select2-selection{width: 156px;}
-.data-list-select2 + .select2-container span.select2-selection{width: 175px!important;}
+.data-list-select2 + .select2-container span.select2-selection{width: 140px!important;}
 
 .control-buttons{text-align: center;}
 
@@ -100,3 +100,7 @@ input.select2-search__field{
 }
 
 span.select2.select2-container{width: auto!important;} /* Firefox bug */
+
+.legend{
+  width: 100px;
+}
