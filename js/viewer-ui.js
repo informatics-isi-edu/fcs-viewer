@@ -18,7 +18,7 @@ function getKeys(blob) {
 
 function setupUI(blob) {
   var dataKeys=getKeys(blob);
-//XXX  if(!enableEmbedded) {
+//XXX  if(!enableEmbedded) { -- when control goes to chaise side
   if(true) {
     /* enable control and annotations buttons */
     var bElm = document.getElementById('controlBlock');

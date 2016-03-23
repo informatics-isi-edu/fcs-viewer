@@ -1496,14 +1496,15 @@ $('.y-list-select2').select2({theme:"classic"});
   });
 
 // initial plot
-/*XXX
    if(!enableEmbedded) {
      displayInitPlot(blob);
    }
-*/
-  if(true) {
-    reset2InitPlot();
-  }
+})
+
+$(window).load(function() {
+   if(enableEmbedded) {
+     reset2InitPlot();
+   }
 })
 
 // initial plot to display
