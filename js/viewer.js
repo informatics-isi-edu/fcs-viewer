@@ -1501,8 +1501,9 @@ $('.y-list-select2').select2({theme:"classic"});
    }
 })
 
-$(window).load(function() {
+$(window).onload(function() {
    if(enableEmbedded) {
+     window.console.log("reset2InitPlot got called from window.load");
      reset2InitPlot();
    }
 })
