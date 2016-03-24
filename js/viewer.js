@@ -16,6 +16,7 @@ var saveScatterPlot=null;
 var saveGatedScatterPlot=null;
 var saveGatedMixedScatterPlot=null;
 var saveBlob=null;
+var saveFirst=true;
 var inLog=true;
 
 var slider_X_dirty=false;
@@ -1504,6 +1505,15 @@ $('.y-list-select2').select2({theme:"classic"});
 window.self.onload=function() {
    if(enableEmbedded) {
      reset2InitPlot();
+   }
+}
+
+window.onresize=function() {
+   if(enableEmbedded) {
+     if(saveFirst) {
+       reset2InitPlot();
+       saveFirst=false;
+     }
    }
 }
 
