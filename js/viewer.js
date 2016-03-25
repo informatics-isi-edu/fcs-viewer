@@ -1502,12 +1502,16 @@ $('.y-list-select2').select2({theme:"classic"});
    }
 })
 
+/***
 window.self.onload=function() {
    if(enableEmbedded) {
      reset2InitPlot();
    }
 }
+***/
 
+// under chaise/angular, the plot window has
+// width/height=0 when accordian-group is-open=false
 window.onresize=function() {
    if(enableEmbedded) {
      if(saveFirst) {
