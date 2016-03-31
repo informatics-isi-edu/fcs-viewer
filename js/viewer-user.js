@@ -2,7 +2,6 @@
 // This is very user/dataset specific information
 // for, USC
 
-
 // to be use to display on the plot
 // KEYLIST['full key']='shorten key'
 var KEYLIST= { "Forward Scatter (FSC-HLin)": "Forward Scatter",
@@ -22,3 +21,5 @@ var DEFAULT_GATEX=Math.round(Math.log10(20)*100)/100;
 var DEFAULT_GATEY=Math.round(Math.log10(30)*100)/100;
 var DEFAULT_GATENAMES=['NEDC','EDC','NELC','ELC'];
 var DEFAULT_TITLES=['Expression','cellDeath'];
+
+
