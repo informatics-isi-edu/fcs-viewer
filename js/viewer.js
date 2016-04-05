@@ -100,12 +100,16 @@ $('.y-list-select2').select2({theme:"classic"});
      slider_X_dirty=true;
      slider_Y_dirty=true;
      } else {
+       alertify.error("Usage: view.html?http://datapath/data.json");
+       return;
+/*
        var nfstub=setupDataListWithInner();
        blob=loadBlobFromInner(nfstub);
        saveBlob=blob;
        dataKeys=setupUI(blob);
        slider_X_dirty=true;
        slider_Y_dirty=true;
+*/
   }
 
   $('#x-list').change(function() {
