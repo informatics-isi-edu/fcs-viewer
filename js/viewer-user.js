@@ -1,4 +1,6 @@
 //
+// fcs-viewer
+//
 // This is very user/dataset specific information
 // for, USC
 
@@ -22,4 +24,14 @@ var DEFAULT_GATEY=Math.round(Math.log10(30)*100)/100;
 var DEFAULT_GATENAMES=['NEDC','EDC','NELC','ELC'];
 var DEFAULT_TITLES=['Expression','cellDeath'];
 
+
+function trimKey(key) {
+  if(Object.keys(SKIPKEYS).indexOf(key)!= -1) // skip this in dropdown
+    return null;
+  if(Object.keys(KEYLIST).indexOf(key) != -1) {
+     var s=KEYLIST[key];
+     return s;
+  }
+  return null;
+}
 

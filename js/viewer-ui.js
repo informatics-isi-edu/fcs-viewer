@@ -1,3 +1,6 @@
+//
+// fcs-viewer
+//
 // A flag to track whether plotly viewer is
 // being used inside another window (i.e. Chaise), set enableEmbedded.
 

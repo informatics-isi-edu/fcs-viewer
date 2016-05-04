@@ -1,3 +1,6 @@
+//
+// fcs-viewer
+//
 
 function getHistogramAt(blob, key, color) {
   var x=getOriginalChannelData(key);
@@ -637,16 +640,6 @@ function addAPlot(divname, data, layout, w, h) {
   var gd = gd3.node();
   Plotly.newPlot(gd, data, layout);
   return gd;
-}
-
-function trimKey(key) {
-  if(Object.keys(SKIPKEYS).indexOf(key)!= -1) // skip this in dropdown
-    return null;
-  if(Object.keys(KEYLIST).indexOf(key) != -1) {
-     var s=KEYLIST[key];
-     return s;
-  }
-  return null;
 }
 
 // process x axis's gating

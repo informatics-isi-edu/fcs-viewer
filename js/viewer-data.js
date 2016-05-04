@@ -1,3 +1,7 @@
+//
+// fcs-viewer
+//
+
 function loadBlobFromInner(blob_name)
 {
 
