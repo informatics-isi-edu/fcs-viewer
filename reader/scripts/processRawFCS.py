@@ -7,10 +7,10 @@
 ##
 ## usage: ./processRawFCS.py dir/exp_010214m.EP5.FCS outdir [ oneUp ]
 ##
-##     will produce outdir/exp_010214m.EP5.FCS_sampleID.FCS
-##     will produce outdir/exp_010214m.EP5.FCS_sampleID.json
-##     will produce outdir/exp_010214m.EP5.FCS_sampleID.csv
-##     will produce outdir/exp_010214m.EP5.FCS_sampleID_m.csv
+##     will produce outdir/exp_010214m.EP5.FCS_sampleID_w.FCS
+##     will produce outdir/exp_010214m.EP5.FCS_sampleID_w.FCS.json
+##     will produce outdir/exp_010214m.EP5.FCS_sampleID_w.FCS.csv
+##     will produce outdir/exp_010214m.EP5.FCS_sampleID_w.FCS_m.csv
 ##
 
 import os
@@ -36,6 +36,7 @@ datafile=sys.argv[1]
 dfile=os.path.basename(datafile)
 dirname=os.path.dirname(datafile)
 oneOnly=False
+wellid=0
 
 if dfile.endswith('.FCS') or dfile.endswith('.fcs'):
   resultID = dfile[:-4]
@@ -57,6 +58,19 @@ def processOne(target):
     genJsonFile(target, subset)
     genCSVStatisticsFile(target, sample)
     genCSVMetadataFile(target,sample)
+
+    tmp = target[:-4]
+    otarget=target;
+    target=tmp+"_"+str(wellid)+".FCS"
+    ## rewrite outdir/exp_010214m.EP5.FCS_sampleID.FCS
+    ## into rewrite outdir/exp_010214m.EP5.FCS_sampleID_w.FCS
+    os.rename(otarget, target)
+##  outdir/exp_010214m.EP5.FCS_sampleID_w.FCS.json
+    os.rename(otarget+".json", target+".json")
+##  outdir/exp_010214m.EP5.FCS_sampleID_w.FCS.csv
+    os.rename(otarget+".csv", target+".csv")
+##  outdir/exp_010214m.EP5.FCS_sampleID_w.FCS_m.csv
+    os.rename(otarget+"_m.csv", target+"_m.csv")
 
 ###########################################################
 
@@ -173,6 +187,7 @@ def genCSVMetadataFile(target, sample):
 
 ####################MAIN###################################
 if __name__ == "__main__":
+  wellid=1
   if oneOnly :
       nextdata, newfile  = fcsparser.rewrite(datafile, outdir, dataset_start=0)
       processOne(newfile)
@@ -184,4 +199,5 @@ if __name__ == "__main__":
           nextdata, newfile=fcsparser.rewrite(datafile, outdir, dataset_start=n)
           n=nextdata+n
           processOne(newfile)
+          wellid=wellid+1
 
