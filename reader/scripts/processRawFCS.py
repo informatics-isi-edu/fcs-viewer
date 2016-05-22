@@ -61,7 +61,7 @@ def processOne(target):
 
     tmp = target[:-4]
     otarget=target;
-    target=tmp+"_"+str(wellid)+".FCS"
+    target=tmp+"_s"+str(wellid)+".FCS"
     ## rewrite outdir/exp_010214m.EP5.FCS_sampleID.FCS
     ## into rewrite outdir/exp_010214m.EP5.FCS_sampleID_w.FCS
     os.rename(otarget, target)
