@@ -75,7 +75,7 @@ def processOne(target):
 
 ###########################################################
 
-def getStats(qq_data):
+def getStats(qq_data,total_count):
     if (qq_data.empty): 
       return [ "NaN", "NaN", "NaN", "NaN", "NaN", "NaN" ];
     p=qq_data.mean()[0]
@@ -83,7 +83,7 @@ def getStats(qq_data):
     p=qq_data.median()[0]
     median=int(pow(10,p))
     p=qq_data.count()[0]
-    percentTotal=int(round((p*100)/ float(2000)))
+    percentTotal=int(round((p*100)/ float(total_count)))
     max=round(qq_data.max()[0],3)
     min=round(qq_data.min()[0],3)
     count=qq_data.count()[0]
@@ -156,20 +156,23 @@ def genCSVStatisticsFile(target, sample):
     gated_sample = sample.gate(expr_gating)
     expr_data=gated_sample.data[['Green Fluorescence (GRN-HLog)']]
 
+    total_count=g1_data.count()[0]+g2_data.count()[0]+g3_data.count()[0]+g4_data.count()[0]
+#    print "total_count is..:",total_count
+
 #"--------NEDC------------"
-    ss=getStats(g1_data)
+    ss=getStats(g1_data,total_count)
     writer.writerow(ss)
 #"--------EDC------------"
-    ss=getStats(g2_data)
+    ss=getStats(g2_data,total_count)
     writer.writerow(ss)
 #"--------NELC------------"
-    ss=getStats(g3_data)
+    ss=getStats(g3_data,total_count)
     writer.writerow(ss)
 #"--------ELC------------"
-    ss=getStats(g4_data)
+    ss=getStats(g4_data,total_count)
     writer.writerow(ss)
 #"--------EXPR------------"
-    ss=getStats(expr_data)
+    ss=getStats(expr_data,total_count)
     writer.writerow(ss)
     f.close()
 
