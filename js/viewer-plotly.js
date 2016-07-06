@@ -227,9 +227,7 @@ function getGatedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
   var Q4x=Q[3][0], Q4y=Q[3][1], Text4=Q[3][3];
 
 /* special case.. if xkey==green and ykey==red, then use namegate.. */
-  var _name= (xkey === 'Green Fluorescence (GRN-HLin)'
-                      && ykey === 'Red Fluorescence (RED-HLin)')?
-                                initPlot_gateNames:['Q1','Q2','Q3','Q4'];
+  var _name=setInitialQuadrantGateNames(xkey,ykey);
 
   /* separate into 4 sets of traces */
   var data= [
@@ -299,9 +297,8 @@ function getGatedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
 // xytitle = [xtitle, ytitle]
 function getGatedScatterSetDefaultLayout(xkey,ykey,xrange,yrange){
   var tmpx, tmpy;
-  var _title=(xkey === 'Green Fluorescence'
-                      && ykey === 'Red Fluorescence')?
-                         initPlot_titles: [xkey+"(log)",ykey+"(log)"];
+  var _title=setInitialTitles(xkey,ykey);
+
   if(xrange && yrange) {
     tmpx= { "title":_title[0], "range": xrange };
     tmpy= { "title":_title[1], "range": yrange };
@@ -416,9 +413,7 @@ function getGatedMixedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
   var Q4x=Q[3][0], Q4y=Q[3][1], Text4=Q[3][3];
 
 /* special case.. if xkey==green and ykey==red, then use namegate.. */
-  var _name= (xkey === 'Green Fluorescence (GRN-HLin)'
-                      && ykey === 'Red Fluorescence (RED-HLin)')?
-                                initPlot_gateNames:['Q1','Q2','Q3','Q4'];
+  var _name=setInitialQuadrantGateNames(xkey,ykey);
 
   /* separate into 4 sets of traces */
   var data= [
@@ -503,9 +498,7 @@ function getGatedMixedScatterSetAt(blob, xkey, ykey, xgate, ygate) {
 function getGatedMixedScatterSetDefaultLayout(xkey,ykey,xrange,yrange,xrange2,yrange2){
   var tmpx, tmpy, tmpx2, tmpy2;
 
-  var _title=(xkey === 'Green Fluorescence'
-                      && ykey === 'Red Fluorescence')?
-                         initPlot_titles: [xkey+"(log)",ykey+"(log)"];
+  var _title=setInitialTitles(xkey,ykey);
 
   if(xrange) {
     tmpx= { "domain": [0, 0.85], "showgrid": true, "title": _title[0],

@@ -35,8 +35,6 @@ var initPlot_gateX=DEFAULT_GATEX;
 var initPlot_gateY=DEFAULT_GATEY;
 var initPlot_keyX=DEFAULT_CHANNEL1;
 var initPlot_keyY=DEFAULT_CHANNEL2;
-var initPlot_gateNames=DEFAULT_GATENAMES;
-var initPlot_titles=DEFAULT_TITLES;
 
 // should be a very small file and used for testing and so can ignore
 // >>Synchronous XMLHttpRequest on the main thread is deprecated

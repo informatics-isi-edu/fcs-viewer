@@ -12,11 +12,13 @@ var KEYLIST= { "Forward Scatter (FSC-HLin)": "Forward Scatter",
                "Yellow Fluorescence (YLW-HLin)": "Yellow Fluorescence",
                "Red Fluorescence (RED-HLin)": "Red Fluorescence" };
 
-// key that is not to be used in ploting at this point 
+// key that is not to be used in plotting at this point 
 var SKIPKEYS= { "Time": "Time" };
 
 var DEFAULT_CHANNEL1='Green Fluorescence (GRN-HLin)';
 var DEFAULT_CHANNEL2='Red Fluorescence (RED-HLin)';
+var DEFAULT_CHANNEL1_TRIM='Green Fluorescence';
+var DEFAULT_CHANNEL2_TRIM='Red Fluorescence';
 var DEFAULT_PLOT='gmtwod';
 var DEFAULT_FCS='inf_072514.EP5';
 var DEFAULT_GATEX=Math.round(Math.log10(20)*100)/100;
@@ -33,5 +35,19 @@ function trimKey(key) {
      return s;
   }
   return null;
+}
+
+// default setting as initial preset
+function setInitialQuadrantGateNames(xkey,ykey) {
+  if(xkey === DEFAULT_CHANNEL1 && ykey === DEFAULT_CHANNEL2)
+    return DEFAULT_GATENAMES;
+  else
+    return ['Q1','Q2','Q3','Q4'];
+}
+
+function setInitialTitles(xkey,ykey) {
+  if(xkey === DEFAULT_CHANNEL1_TRIM && ykey === DEFAULT_CHANNEL2_TRIM)
+    return DEFAULT_TITLES;
+  else return [xkey+"(log)",ykey+"(log)"];
 }
 

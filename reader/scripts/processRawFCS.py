@@ -7,11 +7,12 @@
 ##
 ## usage: ./processRawFCS.py dir/exp_010214m.EP5.FCS outdir [ oneUp ]
 ##
-##     will produce outdir/exp_010214m.EP5.FCS_sampleID_w.FCS
-##     will produce outdir/exp_010214m.EP5.FCS_sampleID_w.FCS.json
-##     will produce outdir/exp_010214m.EP5.FCS_sampleID_w.FCS.csv
-##     will produce outdir/exp_010214m.EP5.FCS_sampleID_w.FCS_m.csv
+##     will produce outdir/exp_010214m.EP5.FCS_sampleID_rN.FCS
+##     will produce outdir/exp_010214m.EP5.FCS_sampleID_rN.FCS.json
+##     will produce outdir/exp_010214m.EP5.FCS_sampleID_rN.FCS.csv
+##     will produce outdir/exp_010214m.EP5.FCS_sampleID_rN.FCS_m.csv
 ##
+##    where _rN's N is rank within datafile
 
 import os
 import sys
@@ -64,13 +65,13 @@ def processOne(target):
     otarget=target;
     target=tmp+"_r"+str(rankid)+".FCS"
     ## rewrite outdir/exp_010214m.EP5.FCS_sampleID.FCS
-    ## into rewrite outdir/exp_010214m.EP5.FCS_sampleID_w.FCS
+    ## into rewrite outdir/exp_010214m.EP5.FCS_sampleID_rN.FCS
     os.rename(otarget, target)
-##  outdir/exp_010214m.EP5.FCS_sampleID_w.FCS.json
+##  outdir/exp_010214m.EP5.FCS_sampleID_rN.FCS.json
     os.rename(otarget+".json", target+".json")
-##  outdir/exp_010214m.EP5.FCS_sampleID_w.FCS.csv
+##  outdir/exp_010214m.EP5.FCS_sampleID_rN.FCS.csv
     os.rename(otarget+".csv", target+".csv")
-##  outdir/exp_010214m.EP5.FCS_sampleID_w.FCS_m.csv
+##  outdir/exp_010214m.EP5.FCS_sampleID_rN.FCS_m.csv
     os.rename(otarget+"_m.csv", target+"_m.csv")
 
 ###########################################################
