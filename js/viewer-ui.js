@@ -6,7 +6,8 @@
 
 var enableEmbedded = false;
 if (window.self !== window.top) {
-    enableEmbedded = true;
+  var $iframe_parent_div = window.frameElement ? $(window.frameElement.parentNode) : null;
+  if (!iframe_parent_div || !$iframe_parent_div.is(':visible')) enableEmbedded = true;
 }
 
 //[ "Forward Scatter (FSC-HLin)", "Side Scatter (SSC-HLin)",
