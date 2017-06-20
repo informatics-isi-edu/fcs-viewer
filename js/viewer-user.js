@@ -1,5 +1,5 @@
 //
-// fcs-viewer
+// fcs-viewer/viewer-user.js
 //
 // This is very user/dataset specific information
 // for, USC
