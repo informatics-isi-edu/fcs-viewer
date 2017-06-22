@@ -1,4 +1,12 @@
 
+fcs-viewer/reader
+
+Accept a single multi-dataset  FCS file and explode 
+into multiple single-dataset FCS files and
+generate data and statistic cvs files needed for
+for visualization with fcs-viewer  
+
+
 Following needs to be installed for the reader to
 work,
 
